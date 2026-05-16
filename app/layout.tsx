@@ -5,6 +5,7 @@ import { Providers } from "../components/Providers";
 import { AppShell } from "@/components/AppShell";
 import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import { validateEnv } from "@/lib/env-config";
 
 validateEnv();
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               {children}
             </AppShell>
             <Analytics />
+            <SpeedInsights />
           </SmoothProvider>
         </Providers>
       </body>
