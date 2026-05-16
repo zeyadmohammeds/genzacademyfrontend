@@ -1,0 +1,12 @@
+**/.next
+**/node_modules
+**/.env
+**/.env.local
+**/.env.*.local
+**/public/uploads
+.dockerignore
+Dockerfile
+.git
+.github
+.vscode
+README.md
