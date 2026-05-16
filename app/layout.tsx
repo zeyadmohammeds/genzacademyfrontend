@@ -4,6 +4,7 @@ import { SmoothProvider } from "@/components/SmoothProvider";
 import { Providers } from "../components/Providers";
 import { AppShell } from "@/components/AppShell";
 import { Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <AppShell>
               {children}
             </AppShell>
+            <Analytics />
           </SmoothProvider>
         </Providers>
       </body>
