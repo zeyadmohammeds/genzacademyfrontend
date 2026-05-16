@@ -4,7 +4,10 @@ import { SmoothProvider } from "@/components/SmoothProvider";
 import { Providers } from "../components/Providers";
 import { AppShell } from "@/components/AppShell";
 import { Inter } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
+import { validateEnv } from "@/lib/env-config";
+
+validateEnv();
 
 const inter = Inter({
   subsets: ["latin"],

@@ -16,7 +16,10 @@ import type {
   StudentProgress,
 } from "./types";
 
-export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5079";
+import { env } from "./env-config";
+import * as Sentry from "@sentry/nextjs";
+
+export const API_BASE = env.apiBaseUrl;
 
 // ─── Brochure Paths ───────────────────────────────────────────────────────────
 export const BROCHURE_MAP: Record<string, string> = {
@@ -138,73 +141,129 @@ const FALLBACK_ROUNDS: CourseRound[] = FALLBACK_COURSES.map((c) => ({
 // ─── Base HTTP Helpers ────────────────────────────────────────────────────────
 
 export async function apiGet<T>(path: string, fallback: T): Promise<T> {
+  Sentry.addBreadcrumb({
+    category: "api",
+    message: `GET ${path}`,
+    level: "info",
+  });
+
   try {
     const res = await fetch(`${API_BASE}${path}`, {
       cache: "no-store",
       credentials: "include",
     });
-    if (!res.ok) return fallback;
+    if (!res.ok) {
+      if (res.status >= 500) {
+        Sentry.captureMessage(`API Error ${res.status}: GET ${path}`, "error");
+      }
+      return fallback;
+    }
     return (await res.json()) as T;
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { path, method: "GET" } });
     return fallback;
   }
 }
 
 export async function apiPost<T>(path: string, body?: unknown, fallback?: T): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: "POST",
-    cache: "no-store",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: body === undefined ? undefined : JSON.stringify(body),
+  Sentry.addBreadcrumb({
+    category: "api",
+    message: `POST ${path}`,
+    data: { body: body ? JSON.stringify(body).substring(0, 200) : undefined },
+    level: "info",
   });
 
-  if (!res.ok) {
-    const text = await res.text();
-    if (fallback !== undefined) return fallback;
-    throw new Error(text || `Request failed: ${res.status}`);
-  }
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      method: "POST",
+      cache: "no-store",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
 
-  const text = await res.text();
-  if (!text) return {} as T;
-  return JSON.parse(text) as T;
+    if (!res.ok) {
+      const text = await res.text();
+      Sentry.captureMessage(`API Error ${res.status}: POST ${path}`, {
+        level: "error",
+        extra: { errorBody: text }
+      });
+      if (fallback !== undefined) return fallback;
+      throw new Error(text || `Request failed: ${res.status}`);
+    }
+
+    const text = await res.text();
+    if (!text) return {} as T;
+    return JSON.parse(text) as T;
+  } catch (error) {
+    Sentry.captureException(error, { extra: { path, method: "POST", body } });
+    throw error;
+  }
 }
 
 export async function apiPut<T>(path: string, body?: unknown, fallback?: T): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: "PUT",
-    cache: "no-store",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: body === undefined ? undefined : JSON.stringify(body),
+  Sentry.addBreadcrumb({
+    category: "api",
+    message: `PUT ${path}`,
+    data: { body: body ? JSON.stringify(body).substring(0, 200) : undefined },
+    level: "info",
   });
 
-  if (!res.ok) {
-    const text = await res.text();
-    if (fallback !== undefined) return fallback;
-    throw new Error(text || `Request failed: ${res.status}`);
-  }
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      method: "PUT",
+      cache: "no-store",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
 
-  const text = await res.text();
-  if (!text) return {} as T;
-  return JSON.parse(text) as T;
+    if (!res.ok) {
+      const text = await res.text();
+      Sentry.captureMessage(`API Error ${res.status}: PUT ${path}`, {
+        level: "error",
+        extra: { errorBody: text }
+      });
+      if (fallback !== undefined) return fallback;
+      throw new Error(text || `Request failed: ${res.status}`);
+    }
+
+    const text = await res.text();
+    if (!text) return {} as T;
+    return JSON.parse(text) as T;
+  } catch (error) {
+    Sentry.captureException(error, { extra: { path, method: "PUT", body } });
+    throw error;
+  }
 }
 
 export async function apiDelete<T>(path: string, fallback?: T): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: "DELETE",
-    cache: "no-store",
-    credentials: "include",
+  Sentry.addBreadcrumb({
+    category: "api",
+    message: `DELETE ${path}`,
+    level: "info",
   });
 
-  if (!res.ok) {
-    if (fallback !== undefined) return fallback;
-    throw new Error(`Delete failed: ${res.status}`);
-  }
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      method: "DELETE",
+      cache: "no-store",
+      credentials: "include",
+    });
 
-  const text = await res.text();
-  if (!text) return {} as T;
-  return JSON.parse(text) as T;
+    if (!res.ok) {
+      Sentry.captureMessage(`API Error ${res.status}: DELETE ${path}`, "error");
+      if (fallback !== undefined) return fallback;
+      throw new Error(`Delete failed: ${res.status}`);
+    }
+
+    const text = await res.text();
+    if (!text) return {} as T;
+    return JSON.parse(text) as T;
+  } catch (error) {
+    Sentry.captureException(error, { extra: { path, method: "DELETE" } });
+    throw error;
+  }
 }
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────

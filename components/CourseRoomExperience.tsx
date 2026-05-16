@@ -10,8 +10,10 @@ import {
   Clock, Calendar, IdentificationBadge, CaretDown,
   Terminal, HardDrive, Cpu, X, Microphone,
   VideoCamera, ChatTeardropText, ShareNetwork,
-  UserPlus, Gear, UploadSimple, Plus, PencilSimple
+  UserPlus, Gear, UploadSimple, Plus, PencilSimple,
+  Code, PencilSimpleLine, Student
 } from "@phosphor-icons/react";
+import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/lib/toast-context";
@@ -521,8 +523,31 @@ export function CourseRoomExperience({ room, isAdminView = false }: { room: Cour
              </div>
            )}
 
-           {/* Cohort Leaderboard */}
-           <div className="bg-ink rounded-[3rem] p-10 shadow-xl text-white">
+            {/* Quick Tools */}
+            <div className="bg-white rounded-[3rem] p-8 border border-black/5 shadow-sm">
+               <h3 className="font-display text-xl font-black text-zinc-900 mb-6">Quick Tools</h3>
+               <div className="grid grid-cols-2 gap-3">
+                  <Link href="/quiz" className="bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl p-5 text-white flex flex-col items-center gap-3 hover:scale-[1.02] transition-transform shadow-md">
+                     <PencilSimpleLine size={24} weight="bold" />
+                     <span className="text-[9px] font-black uppercase tracking-wider text-center">Quizzes</span>
+                  </Link>
+                  <Link href="/playground" className="bg-gradient-to-br from-cyan-500 to-blue-700 rounded-2xl p-5 text-white flex flex-col items-center gap-3 hover:scale-[1.02] transition-transform shadow-md">
+                     <Code size={24} weight="bold" />
+                     <span className="text-[9px] font-black uppercase tracking-wider text-center">Playground</span>
+                  </Link>
+                  <Link href="/leaderboard" className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-5 text-white flex flex-col items-center gap-3 hover:scale-[1.02] transition-transform shadow-md">
+                     <Trophy size={24} weight="bold" />
+                     <span className="text-[9px] font-black uppercase tracking-wider text-center">Rankings</span>
+                  </Link>
+                  <Link href="/dashboard/progress" className="bg-gradient-to-br from-emerald-500 to-green-700 rounded-2xl p-5 text-white flex flex-col items-center gap-3 hover:scale-[1.02] transition-transform shadow-md">
+                     <Student size={24} weight="bold" />
+                     <span className="text-[9px] font-black uppercase tracking-wider text-center">Progress</span>
+                  </Link>
+               </div>
+            </div>
+
+            {/* Cohort Leaderboard */}
+            <div className="bg-ink rounded-[3rem] p-10 shadow-xl text-white">
               <div className="flex items-center justify-between mb-10">
                  <h3 className="font-display text-2xl font-black">Cohort Rank</h3>
                  <Sparkle size={24} weight="fill" className="text-brand-fg" />
