@@ -36,17 +36,16 @@ export default withSentryConfig(nextConfig, {
   },
 
   // Automatically instrument Next.js API routes and server components
-  autoInstrumentServerFunctions: true,
-  autoInstrumentMiddleware: true,
-  autoInstrumentAppDirectory: true,
-
-  // Tree-shake Sentry debug code from production bundle
-  disableLogger: true,
+  webpack: {
+    autoInstrumentServerFunctions: true,
+    autoInstrumentMiddleware: true,
+    autoInstrumentAppDirectory: true,
+    treeshake: {
+      removeDebugLogging: true,
+    }
+  },
 
   // Tunnel requests through your own server to avoid ad-blockers
   tunnelRoute: "/monitoring-tunnel",
-
-  // Hide the Sentry release banner
-  hideSourceMaps: true,
 });
 
