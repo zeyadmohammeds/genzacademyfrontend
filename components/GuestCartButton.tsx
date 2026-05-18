@@ -13,6 +13,7 @@ type GuestCartItem = {
   courseTitle: string;
   courseSlug: string;
   priceEgp: number;
+  courseImageUrl?: string | null;
 };
 import { useCartUi } from "@/lib/cart-ui-context";
 
@@ -28,7 +29,8 @@ export function GuestCartButton({ course }: { course: Course }) {
       courseId: course.id,
       courseTitle: course.title,
       courseSlug: course.slug,
-      priceEgp: course.priceEgp
+      priceEgp: course.priceEgp,
+      courseImageUrl: course.coverImageUrl || course.imageUrl
     };
 
     const existing = JSON.parse(window.localStorage.getItem("genz_guest_cart") ?? "[]") as GuestCartItem[];

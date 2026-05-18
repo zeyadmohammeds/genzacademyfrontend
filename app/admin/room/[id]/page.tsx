@@ -17,8 +17,11 @@ export default function AdminRoomPage({ params }: { params: Promise<{ id: string
   const router = useRouter();
 
   useEffect(() => {
-    if (!authLoading && (!user || user.role !== "Admin")) {
-      router.push("/auth");
+    if (!authLoading) {
+      const role = user?.role?.toLowerCase() || "";
+      if (!user || (role !== "academy_admin" && role !== "admin" && role !== "engineer" && role !== "cta")) {
+        router.push("/auth");
+      }
     }
   }, [user, authLoading, router]);
 

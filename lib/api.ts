@@ -13,7 +13,11 @@ import type {
   LearningTask,
   Notification,
   ReferralSummary,
+  RoundDetail,
   StudentProgress,
+  QuizQuestion,
+  QuizItem,
+  QuizAttemptSummary,
 } from "./types";
 
 import { env } from "./env-config";
@@ -33,7 +37,7 @@ export const BROCHURE_MAP: Record<string, string> = {
 // ─── Fallback Data ────────────────────────────────────────────────────────────
 const FALLBACK_COURSES: Course[] = [
   {
-    id: "scratch",
+    id: "a1111111-1111-1111-1111-111111111111",
     slug: "scratch",
     title: "Scratch Creative Coding",
     subtitle: "Ages 10–13 · Beginner",
@@ -51,7 +55,7 @@ const FALLBACK_COURSES: Course[] = [
     phase: 1,
   },
   {
-    id: "intro-cpp",
+    id: "b2222222-2222-2222-2222-222222222222",
     slug: "intro-cpp",
     title: "Intro to C++",
     subtitle: "Ages 13–16 · Intermediate",
@@ -69,7 +73,7 @@ const FALLBACK_COURSES: Course[] = [
     phase: 1,
   },
   {
-    id: "advanced-cpp",
+    id: "c3333333-3333-3333-3333-333333333333",
     slug: "advanced-cpp",
     title: "Advanced C++",
     subtitle: "Ages 15+ · Advanced",
@@ -86,7 +90,7 @@ const FALLBACK_COURSES: Course[] = [
     phase: 1,
   },
   {
-    id: "robot-build",
+    id: "d4444444-4444-4444-4444-444444444444",
     slug: "robot-build",
     title: "Robot Build",
     subtitle: "Ages 12–17 · Maker",
@@ -104,7 +108,7 @@ const FALLBACK_COURSES: Course[] = [
     phase: 1,
   },
   {
-    id: "web-app-ai",
+    id: "e5555555-5555-5555-5555-555555555555",
     slug: "web-app-ai",
     title: "Build Web App with AI",
     subtitle: "Ages 13+ · Creator",
@@ -340,7 +344,7 @@ export const removeFromCart = (itemId: string) => apiDelete<void>(`/api/cart/ite
 export const checkoutCart = (data: any) => apiPost<void>("/api/cart/checkout", data);
 
 export const validatePromoCode = (code: string) => 
-  apiPost<{ discountAmount: number; description: string }>("/api/cart/promo", { code });
+  apiPost<Cart>("/api/cart/promo", { code });
 
 // ─── Referrals ────────────────────────────────────────────────────────────────
 export const getReferralSummary = () =>
@@ -358,6 +362,9 @@ export const submitCourseApplication = (data: any) =>
 
 export const updateApplicationStatus = (id: string, status: string) =>
   apiPut<void>(`/api/admin/applications/${id}/status`, { status });
+
+export const getApplicationDetails = (id: string) =>
+  apiGet<any>(`/api/applications/${id}`, null);
 
 export type NotificationSettings = {
   inAppEnabled: boolean;
@@ -462,6 +469,14 @@ function makeDemoCourseRoom(id: string): CourseRoom {
     zoomMeetingId: "123456789",
     zoomJoinUrl: undefined,
     zoomMeetingPassword: "1234",
+    roundStudentCount: 15,
+    courseStudentCount: 45,
+    classmates: [
+      { userId: "1", displayName: "Mazen Salem", email: "mazen@elsewdy.edu", level: 3, totalXp: 1200 },
+      { userId: "2", displayName: "Farida Mourad", email: "farida@elsewdy.edu", level: 4, totalXp: 1850 },
+      { userId: "3", displayName: "Youssef Aly", email: "youssef@elsewdy.edu", level: 2, totalXp: 850 },
+      { userId: "4", displayName: "Judy Shaalan", email: "judy@elsewdy.edu", level: 5, totalXp: 2400 },
+    ],
   };
 }
 
@@ -484,6 +499,9 @@ export const getMyEnrollments = () =>
 
 export const getMyMaterials = (courseId?: string) =>
   apiGet<any[]>(`/api/learning/materials${courseId ? `?courseId=${courseId}` : ""}`, []);
+
+export const getRecommendedCourses = () =>
+  apiGet<any[]>("/api/courses/recommendations", []);
 
 export const getMyCertificates = () =>
   apiGet<any[]>("/api/learning/certificates", []);
@@ -520,20 +538,60 @@ export const updateAdminCourse = (id: string, data: Partial<AdminCourse>) =>
 export const deleteAdminCourse = (id: string) =>
   apiDelete<{ archived: boolean }>(`/api/admin/courses/${id}`);
 
-export const getAdminRounds = (courseId?: string) =>
-  apiGet<CourseRound[]>(`/api/admin/rounds${courseId ? `?courseId=${courseId}` : ""}`, FALLBACK_ROUNDS);
+export const getAdminRounds = async (courseId?: string) => {
+  const rounds = await apiGet<CourseRound[]>(`/api/admin/rounds${courseId ? `?courseId=${courseId}` : ""}`, FALLBACK_ROUNDS);
+  return courseId && rounds === FALLBACK_ROUNDS ? rounds.filter(r => r.courseId === courseId) : rounds;
+};
 
-export const getAdminRound = (id: string) =>
-  apiGet<any>(`/api/admin/rounds/${id}`, null);
+export const getAdminRound = (id: string) => {
+  const actualId = id === "scratch-june-2026" ? "scratch-2026-05" : id;
+  return apiGet<RoundDetail | null>(`/api/admin/rounds/${actualId}`, null);
+};
+
+export const getAdminCourse = (courseId: string) =>
+  apiGet<any | null>(`/api/admin/courses/${courseId}`, null);
+
+export const getAdminCourseMaterials = (courseId: string) =>
+  apiGet<any[]>(`/api/admin/courses/${courseId}/materials`, []);
+
+export const getAdminRoundWeeks = (cohortId: string) =>
+  apiGet<any[]>(`/api/admin/rounds/${cohortId}/weeks`, []);
+
+export const getAdminRoundTasks = (cohortId: string) =>
+  apiGet<any[]>(`/api/admin/rounds/${cohortId}/tasks`, []);
+
+export const getAdminRoundQuizzes = (cohortId: string) =>
+  apiGet<any[]>(`/api/admin/rounds/${cohortId}/quizzes`, []);
+
+export const getAdminRoundStudents = (cohortId: string) =>
+  apiGet<any[]>(`/api/admin/rounds/${cohortId}/students`, []);
 
 export const createAdminRound = (data: Partial<CourseRound>) =>
   apiPost<{ id: string }>("/api/admin/rounds", data);
+
+export const updateRound = (id: string, data: any) =>
+  apiPut<{ updated: boolean }>(`/api/admin/rounds/${id}`, data);
+
+export const updateCourseStep = (sessionInstanceId: string, data: any) =>
+  apiPut<void>(`/api/admin/rounds/weeks/${sessionInstanceId}`, data);
+
+export const updateRoundZoom = (id: string, data: { zoomMeetingId?: string; zoomJoinUrl?: string; zoomStartUrl?: string }) =>
+  apiPut<{ updated: boolean }>(`/api/admin/rounds/${id}/zoom`, data);
+
+export const generateRoundZoom = (id: string) =>
+  apiPost<{ success: boolean; zoomMeetingId: string; zoomJoinUrl: string; zoomStartUrl: string }>(`/api/admin/rounds/${id}/zoom-generate`, {});
+
+export const uploadCourseMaterial = (courseId: string, data: { title: string; materialType: string; url: string; isDownloadable: boolean }) =>
+  apiPost<void>(`/api/admin/courses/${courseId}/materials`, data);
 
 export const getAdminQuestions = (courseId?: string) =>
   apiGet<ApplicationQuestion[]>(
     `/api/admin/questions${courseId ? `?courseId=${courseId}` : ""}`,
     []
   );
+
+export const createAdminQuestion = (data: Partial<ApplicationQuestion>) =>
+  apiPost<{ id: string }>("/api/applications/questions", data);
 
 export const deleteAdminQuestion = (id: string) =>
   apiDelete<{ archived: boolean }>(`/api/admin/questions/${id}`);
@@ -543,6 +601,9 @@ export const getAdminPendingApplications = () =>
 
 export const broadcastNotification = (title: string, message: string, type = "info") =>
   apiPost<{ queued: number }>("/api/notifications/broadcast", { title, message, type });
+
+export const notifyRoundStudents = (cohortId: string, title: string, body: string) =>
+  apiPost<{ queued: number }>(`/api/admin/rounds/${cohortId}/notify`, { title, body, audience: "round" });
 
 export const getAdminUsers = (role?: string) =>
   apiGet<{ id: string; email: string; firstName: string; lastName: string; displayName: string; createdAt: string; isActive: boolean }[]>(
@@ -591,23 +652,32 @@ export const updateCourseSession = (id: string, data: any) =>
 export const deleteCourseSession = (id: string) =>
   apiDelete<{ deleted: boolean }>(`/api/admin/course-sessions/${id}`);
 
-export const updateRound = (id: string, data: any) =>
-  apiPut<{ updated: boolean }>(`/api/admin/rounds/${id}`, data);
-
 export const deleteAdminRound = (id: string) =>
   apiDelete<{ deleted: boolean }>(`/api/admin/rounds/${id}`);
 
-export const uploadCourseMaterial = (courseId: string, data: { title: string; materialType: string; url: string; isDownloadable: boolean }) =>
-  apiPost<void>(`/api/admin/courses/${courseId}/materials`, data);
+export const deleteRoundWeek = (cohortId: string, weekId: string) =>
+  apiDelete<{ deleted: boolean }>(`/api/admin/rounds/${cohortId}/weeks/${weekId}`);
 
-export const updateRoundZoom = (id: string, data: { zoomMeetingId?: string; zoomJoinUrl?: string; zoomStartUrl?: string }) =>
-  apiPut<{ updated: boolean }>(`/api/admin/rounds/${id}/zoom`, data);
+export const deleteCourseMaterial = (id: string) =>
+  apiDelete<{ deleted: boolean }>(`/api/admin/materials/${id}`);
 
-export const updateCourseStep = (sessionInstanceId: string, data: any) =>
-  apiPut<void>(`/api/admin/sessions/${sessionInstanceId}`, data);
+export const deleteLearningTask = (id: string) =>
+  apiDelete<{ deleted: boolean }>(`/api/admin/tasks/${id}`);
+
+export const deleteQuiz = (id: string) =>
+  apiDelete<{ deleted: boolean }>(`/api/admin/quizzes/${id}`);
 
 export const markApplicationPaid = (applicationId: string, data: { paymentMethod: string; paymentReference: string; amountEgp: number }) =>
   apiPost<void>(`/api/applications/${applicationId}/payment`, data);
+
+export const uploadPaymentReceipt = (applicationId: string, data: { receiptUrl: string; paymentMethod: string }) =>
+  apiPost<{ success: boolean }>(`/api/applications/${applicationId}/payment-receipt`, data);
+
+export const getPendingPayments = () =>
+  apiGet<any[]>(`/api/applications/pending-payments`, []);
+
+export const approvePaymentReceipt = (applicationId: string) =>
+  apiPost<{ success: boolean }>(`/api/applications/${applicationId}/approve-payment`);
 
 export const getApplicationCheckout = (applicationId: string) =>
   apiGet<any>(`/api/payments/application/${applicationId}/checkout`, null);
@@ -642,49 +712,26 @@ export const getParentInvoices = () =>
 
 // ─── Engineer Dashboard APIs ──────────────────────────────────────────────────
 export const getEngineerDashboard = () =>
-  apiGet<any>("/api/profiles/engineer/dashboard", {
-    upcomingSessions: [
-      { id: "S-101", title: "Intro to C++: Pointers", group: "Group A", time: "Today, 18:00 EET" }
-    ],
-    pendingEvaluations: 12,
-    activeStudents: 145
-  });
+  apiGet<any>("/api/profiles/engineer/dashboard", null);
 
 export const getEngineerSessions = () =>
-  apiGet<any[]>("/api/learning/engineer/sessions", [
-    { id: "S-101", title: "Intro to C++: Pointers", group: "Group A", date: "June 15, 2026", time: "18:00 - 19:30 EET" },
-  ]);
+  apiGet<any[]>("/api/learning/engineer/sessions", []);
 
 export const getEngineerStudents = () =>
-  apiGet<any[]>("/api/learning/engineer/students", [
-    { name: "Omar Yasser", course: "Intro to C++", group: "Group A", xp: 1250, attendance: "92%" },
-  ]);
+  apiGet<any[]>("/api/learning/engineer/students", []);
 
 export const getEngineerProgressTasks = () =>
-  apiGet<any[]>("/api/learning/engineer/pending-tasks", [
-    { title: "C++ Memory Assignment", course: "Intro to C++", group: "Group A", submissions: 12 },
-  ]);
+  apiGet<any[]>("/api/learning/engineer/pending-tasks", []);
 
 // ─── CTA Dashboard APIs ───────────────────────────────────────────────────────
 export const getCTADashboard = () =>
-  apiGet<any>("/api/profiles/cta/dashboard", {
-    sessionsToSupport: 5,
-    studentsMentored: 12,
-    pendingNotes: 8,
-    upcomingSupport: [
-      { title: "Intro to C++: Group A", time: "Today, 18:00 EET", lead: "Eng. Ahmed" }
-    ]
-  });
+  apiGet<any>("/api/profiles/cta/dashboard", null);
 
 export const getCTASessions = () =>
-  apiGet<any[]>("/api/learning/cta/sessions", [
-    { id: "S-101", title: "Intro to C++: Pointers", group: "Group A", date: "June 15, 2026", time: "18:00 - 19:30 EET", lead: "Ahmed El-Sherif" },
-  ]);
+  apiGet<any[]>("/api/learning/cta/sessions", []);
 
 export const getCTAStudents = () =>
-  apiGet<any[]>("/api/learning/cta/students", [
-    { name: "Omar Yasser", course: "Intro to C++", group: "Group A", notesCount: 4, status: "Needs Help" },
-  ]);
+  apiGet<any[]>("/api/learning/cta/students", []);
 
 // ─── Extended Admin APIs ──────────────────────────────────────────────────────
 export const getAdminPayments = () =>
@@ -701,3 +748,76 @@ export const getAdminAnnouncements = () =>
   apiGet<any[]>("/api/admin/announcements", [
     { title: "Eid Holiday Schedule", audience: "All Users", date: "2 days ago" },
   ]);
+
+export const createAdminMaterial = (data: {
+  courseId: string;
+  courseRoundId?: string;
+  courseLessonId?: string;
+  materialType: string;
+  title: string;
+  url: string;
+  description?: string;
+  isDownloadable: boolean;
+  isPublished: boolean;
+}) => apiPost<{ id: string }>("/api/learning/materials", data);
+
+export const createAdminTask = (data: {
+  courseSessionId?: string;
+  courseRoundId?: string;
+  title: string;
+  description: string;
+  instructions: string;
+  taskType: string;
+  submissionType: string;
+  maxScore: number;
+  xpReward: number;
+  dueHoursAfterSession: number;
+  rubricJson: string;
+}) => apiPost<{ id: string }>("/api/learning/tasks", data);
+
+export const createAdminQuiz = (data: {
+  courseSessionId?: string;
+  courseRoundId?: string;
+  title: string;
+  quizType: string;
+  timeLimitMinutes?: number;
+  maxAttempts: number;
+  passScore: number;
+  xpReward: number;
+  isPublished: boolean;
+}) => apiPost<{ id: string }>("/api/quizzes", data);
+
+export const addAdminQuizQuestion = (data: {
+  quizId: string;
+  questionText: string;
+  questionType: string;
+  imageUrl?: string;
+  codeSnippet?: string;
+  points: number;
+  explanation?: string;
+  sortOrder: number;
+  options: Array<{ optionText: string; isCorrect: boolean; sortOrder: number }>;
+}) => apiPost<{ id: string }>("/api/quizzes/questions", data);
+
+// ─── Student Quiz APIs ────────────────────────────────
+
+export const getQuizQuestions = (quizId: string) =>
+  apiGet<QuizQuestion[]>(`/api/quizzes/${quizId}/questions`, []);
+
+export const getQuizById = (quizId: string) =>
+  apiGet<QuizItem | null>(`/api/quizzes/${quizId}`, null);
+
+export const submitQuizAttempt = (quizId: string, data: {
+  answers: Array<{ questionId: string; answer: string | string[] }>;
+}) => apiPost<{ score: number; maxScore: number; passed: boolean; xpEarned: number }>(
+  `/api/quizzes/${quizId}/attempts`, data
+);
+
+export const getMyQuizAttempts = (quizId: string) =>
+  apiGet<QuizAttemptSummary[]>(`/api/quizzes/${quizId}/my-attempts`, []);
+
+export const getCourseRoomQuizzes = (roomId: string) =>
+  apiGet<QuizItem[]>(`/api/course-rooms/${roomId}/quizzes`, []);
+
+export const createRoundWeek = (cohortId: string, data: any) =>
+  apiPost<{ id: string }>(`/api/admin/rounds/${cohortId}/weeks`, data);

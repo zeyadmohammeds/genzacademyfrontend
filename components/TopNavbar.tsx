@@ -9,12 +9,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { useCartUi } from "@/lib/cart-ui-context";
+import { useNotificationUi } from "@/lib/notification-ui-context";
 import { useNotifications } from "@/lib/notification-context";
 
 export function TopNavbar() {
   const { user } = useAuth();
   const { itemCount } = useCart();
   const { openDrawer } = useCartUi();
+  const { openDrawer: openNotifDrawer } = useNotificationUi();
   const { unreadCount } = useNotifications();
   const [search, setSearch] = useState("");
   const router = useRouter();
@@ -25,25 +27,27 @@ export function TopNavbar() {
     router.push(`/courses?q=${encodeURIComponent(search.trim())}`);
   };
 
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
   return (
-    <header className="sticky top-0 w-full h-24 flex items-center justify-between px-10 pt-4 pb-4 bg-canvas-soft/90 backdrop-blur-xl z-40 shrink-0 border-b border-ink/10">
+    <header className="sticky top-0 w-full h-24 flex items-center justify-between px-4 md:px-10 pt-4 pb-4 bg-canvas-soft/90 backdrop-blur-xl z-40 shrink-0 border-b border-ink/10">
       {/* Left: Branding & Greeting */}
       <div className="flex items-center gap-2">
-        <span className="text-mute font-medium text-sm">Welcome to</span>
-        <span className="text-brand font-display font-black text-xl tracking-tight">GenZ Coders</span>
+        <span className="hidden sm:inline text-mute font-medium text-sm">Welcome to</span>
+        <span className="text-brand font-display font-black text-lg md:text-xl tracking-tight">GenZ Coders</span>
       </div>
 
       {/* Right: Search, Cart, Notifications, Profile */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-3 md:gap-6">
         
-        {/* Search Bar */}
-        <form onSubmit={handleSearch} className="relative flex items-center group">
+        {/* Search Bar - hidden on mobile unless toggled */}
+        <form onSubmit={handleSearch} className={`relative items-center group ${mobileSearchOpen ? 'flex' : 'hidden md:flex'}`}>
           <input 
             type="text" 
             placeholder="Search Intelligence Tracks..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-[320px] h-12 pl-6 pr-14 rounded-xl border border-ink bg-canvas text-sm font-semibold text-ink placeholder:text-mute focus:outline-none focus:ring-4 focus:ring-brand/15 focus:border-ink shadow-sm transition-all duration-500"
+            className="w-[200px] lg:w-[320px] h-12 pl-6 pr-14 rounded-xl border border-ink bg-canvas text-sm font-semibold text-ink placeholder:text-mute focus:outline-none focus:ring-4 focus:ring-brand/15 focus:border-ink shadow-sm transition-all duration-500"
           />
           <button 
             type="submit"
@@ -52,6 +56,13 @@ export function TopNavbar() {
             <MagnifyingGlass size={18} weight="bold" />
           </button>
         </form>
+        <button
+          onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+          className="flex md:hidden w-12 h-12 rounded-xl border border-ink bg-canvas items-center justify-center text-ink shadow-sm"
+          aria-label="Toggle search"
+        >
+          <MagnifyingGlass size={20} weight="bold" />
+        </button>
 
         {/* Cart */}
         <button
@@ -68,12 +79,14 @@ export function TopNavbar() {
         </button>
 
         {/* Notification */}
-        <Link href="/notifications" className="w-12 h-12 rounded-xl border border-ink bg-canvas flex items-center justify-center text-ink hover:bg-canvas-soft shadow-sm transition-all hover:shadow-md relative active:scale-95 group">
+        <button onClick={openNotifDrawer} className="relative w-12 h-12 rounded-xl border border-ink bg-canvas flex items-center justify-center text-ink hover:bg-canvas-soft shadow-sm transition-all hover:shadow-md active:scale-95 group">
           <Bell size={22} weight="duotone" className="group-hover:rotate-12 transition-transform" />
           {unreadCount > 0 && (
-            <span className="absolute top-2 right-2 min-w-[10px] h-2.5 px-1 rounded-full bg-brand border-2 border-canvas" />
+            <span className="absolute -top-2 -right-2 min-w-[1.25rem] h-5 px-1 rounded-full bg-brand text-brand-fg text-[10px] font-black flex items-center justify-center border-4 border-canvas-soft shadow-lg">
+              {unreadCount}
+            </span>
           )}
-        </Link>
+        </button>
 
         {/* User Profile */}
         <Link href="/profile" className="flex items-center gap-4 pl-4 cursor-pointer group border-l border-ink/10">

@@ -30,6 +30,7 @@ export type Course = {
   colorHex?: string;
   iconName?: string;
   coverImageUrl?: string;
+  imageUrl?: string;
   skillsTaughtJson?: string;
   isActive?: boolean;
   isFeatured?: boolean;
@@ -47,6 +48,7 @@ export type CourseRound = {
   id: string;
   courseId: string;
   courseTitle: string;
+  courseSlug?: string;
   name: string;
   slug: string;
   status: string;
@@ -57,6 +59,9 @@ export type CourseRound = {
   isEnrollmentOpen: boolean;
   autoAcceptPaidApplications: boolean;
   requireEngineerApproval: boolean;
+  zoomMeetingId?: string | null;
+  zoomJoinUrl?: string | null;
+  zoomStartUrl?: string | null;
 };
 
 export type ApplicationQuestion = {
@@ -98,6 +103,7 @@ export type CartItem = {
   discountAmountEgp: number;
   finalPriceEgp: number;
   isBundleItem: boolean;
+  courseImageUrl?: string | null;
 };
 
 export type Cart = {
@@ -141,7 +147,21 @@ export type CourseRoom = {
   progress: CourseProgress;
   zoomMeetingId?: string;
   zoomJoinUrl?: string;
+  zoomStartUrl?: string;
   zoomMeetingPassword?: string;
+  roundStudentCount: number;
+  courseStudentCount: number;
+  classmates: Classmate[];
+  quizzes?: QuizItem[];
+  quizAttempts?: QuizAttemptSummary[];
+};
+
+export type Classmate = {
+  userId: string;
+  displayName: string;
+  email?: string;
+  level: number;
+  totalXp: number;
 };
 
 export type SessionWeek = {
@@ -209,6 +229,15 @@ export type AdminCourse = Course & {
   sortOrder: number;
   isActive: boolean;
   isFeatured: boolean;
+  isDeleted: boolean;
+};
+
+export type AdminCourseDetail = AdminCourse & {
+  roundsCount: number;
+  activeRoundsCount: number;
+  enrollmentsCount: number;
+  materialsCount: number;
+  sessionsCount: number;
 };
 
 export type Notification = {
@@ -254,6 +283,116 @@ export type LearningTask = {
   status: "pending" | "submitted" | "graded" | string;
   score?: number;
   feedback?: string;
+};
+
+// ─── Admin Round Detail (Command Center) ─────────────
+
+export type WeekItem = {
+  id: string;
+  weekNumber: number;
+  weekTitle: string;
+  sessionType: string;
+  scheduledAt: string;
+  durationMinutes: number;
+  status: string;
+  sessionLink?: string;
+  recordingUrl?: string;
+};
+
+export type MaterialItem = {
+  id: string;
+  title: string;
+  materialType: string;
+  url: string;
+  isDownloadable: boolean;
+  isPublished: boolean;
+};
+
+export type StudentItem = {
+  studentUserId: string;
+  studentName: string;
+  email: string;
+  enrolledAt: string;
+  applicationId?: string;
+};
+
+export type QuizItem = {
+  id: string;
+  title: string;
+  quizType: string;
+  timeLimitMinutes?: number;
+  maxAttempts: number;
+  passScore: number;
+  xpReward: number;
+  isPublished: boolean;
+  questionsCount?: number;
+};
+
+export type QuizQuestion = {
+  id: string;
+  questionText: string;
+  questionType: "Mcq" | "TrueFalse" | "ShortAnswer";
+  imageUrl?: string;
+  codeSnippet?: string;
+  points: number;
+  explanation?: string;
+  sortOrder: number;
+  options: QuizOption[];
+};
+
+export type QuizOption = {
+  optionText: string;
+  isCorrect: boolean;
+  sortOrder: number;
+};
+
+export type QuizAttemptSummary = {
+  quizId: string;
+  quizTitle: string;
+  quizType: string;
+  score: number;
+  maxScore: number;
+  passed: boolean;
+  xpEarned: number;
+  completedAt: string;
+  attemptNumber: number;
+};
+
+export type TaskItem = {
+  id: string;
+  title: string;
+  description: string;
+  instructions: string;
+  taskType: string;
+  submissionType: string;
+  maxScore: number;
+  xpReward: number;
+  dueHoursAfterSession: number;
+};
+
+export type RoundDetail = {
+  id: string;
+  courseId: string;
+  courseTitle: string;
+  courseSlug?: string;
+  name: string;
+  slug: string;
+  status: string;
+  startDate: string;
+  maxStudents: number;
+  currentStudents: number;
+  isEnrollmentOpen: boolean;
+  autoAcceptPaidApplications: boolean;
+  requireEngineerApproval: boolean;
+  zoomMeetingId?: string;
+  zoomJoinUrl?: string;
+  zoomStartUrl?: string;
+  instructorName?: string;
+  weeks: WeekItem[];
+  materials: MaterialItem[];
+  students: StudentItem[];
+  quizzes?: QuizItem[];
+  tasks?: TaskItem[];
 };
 
 // ─── Paginated Response ─────────────────────────────

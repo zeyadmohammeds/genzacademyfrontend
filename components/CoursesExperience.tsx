@@ -51,7 +51,7 @@ export function CoursesExperience({ courses, rounds }: { courses: Course[]; roun
                 placeholder="Search catalog..." 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-transparent border-none pl-12 pr-4 py-3 text-lg font-bold text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-0"
+                className="w-full bg-white/60 border border-black/10 pl-12 pr-4 py-3 text-lg font-bold text-zinc-900 placeholder:text-zinc-400 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand/40 transition-all"
               />
             </div>
           </div>
@@ -144,7 +144,7 @@ export function CoursesExperience({ courses, rounds }: { courses: Course[]; roun
                             Age {course.minimumAge}+
                           </span>
                         </div>
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="opacity-0 group-hover:opacity-100 md:opacity-100 transition-opacity duration-300">
                            <GuestCartButton course={course} />
                         </div>
                       </div>

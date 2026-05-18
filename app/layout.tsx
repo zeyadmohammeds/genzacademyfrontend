@@ -3,18 +3,12 @@ import "./globals.css";
 import { SmoothProvider } from "@/components/SmoothProvider";
 import { Providers } from "../components/Providers";
 import { AppShell } from "@/components/AppShell";
-import { Inter } from "next/font/google";
+import { PageTransition } from "@/components/PageTransition";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { validateEnv } from "@/lib/env-config";
 
 validateEnv();
-
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
-});
 
 export const metadata: Metadata = {
   title: "ElSewedy GenZ Coders | Project-First Youth Tech Academy",
@@ -26,16 +20,21 @@ export const metadata: Metadata = {
     description: "Egypt's leading youth tech academy. Learn code like a studio, not like a playlist.",
     type: "website",
   },
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body className="antialiased" suppressHydrationWarning>
         <Providers>
           <SmoothProvider>
             <AppShell>
-              {children}
+              <PageTransition>
+                {children}
+              </PageTransition>
             </AppShell>
             <Analytics />
             <SpeedInsights />

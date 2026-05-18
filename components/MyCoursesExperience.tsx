@@ -16,6 +16,7 @@ type Enrollment = {
   progressPercent: number;
   currentSessionTitle?: string;
   nextSessionAt?: string;
+  courseImageUrl?: string;
 };
 
 export function MyCoursesExperience({ enrollments }: { enrollments: Enrollment[] }) {
@@ -66,14 +67,28 @@ export function MyCoursesExperience({ enrollments }: { enrollments: Enrollment[]
                     key={enrollment.id}
                     className="group flex flex-col relative"
                   >
-                    <div className="relative w-full overflow-hidden rounded-[2.5rem] bg-zinc-200 mb-8 aspect-[16/9] shadow-md transform-gpu isolate">
-                      <Image 
-                        src={imageFor(`course-${enrollment.courseId}`)} 
-                        alt={courseTitle} 
-                        fill 
-                        className="object-cover scale-100 group-hover:scale-105 transition-transform duration-[1.5s] ease-[cubic-bezier(0.16,1,0.3,1)]"
-                      />
-                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-500 z-10"></div>
+                    <div className="relative w-full overflow-hidden rounded-[2.5rem] bg-zinc-950 mb-8 aspect-[16/9] shadow-md transform-gpu isolate border border-black/5">
+                      {enrollment.courseImageUrl ? (
+                        <Image 
+                          src={enrollment.courseImageUrl} 
+                          alt={courseTitle} 
+                          fill 
+                          className="object-cover scale-100 group-hover:scale-105 transition-transform duration-[1.5s] ease-[cubic-bezier(0.16,1,0.3,1)]"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#1c0000] to-[#3a0000] flex flex-col items-center justify-center p-6 text-center border border-white/5 rounded-[2.5rem]">
+                          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,26,26,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,26,26,0.03)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none" />
+                          <div className="w-14 h-14 rounded-2xl bg-[#ffe6e6]/10 flex items-center justify-center text-[#ff1a1a] mb-4 relative z-10 shadow-[0_0_20px_rgba(255,26,26,0.15)] group-hover:scale-110 transition-transform duration-500">
+                            <BookBookmark size={28} className="drop-shadow-[0_0_8px_#ff1a1a]" weight="fill" />
+                          </div>
+                          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#ff1a1a] relative z-10 mb-1">
+                            EL SEWEDY GENZ ACTIVE PROTOCOL
+                          </div>
+                          <div className="text-[11px] text-zinc-500 font-bold relative z-10 uppercase tracking-widest">{enrollment.cohortName}</div>
+                        </div>
+                      )}
+                      
+                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/35 transition-colors duration-500 z-10"></div>
                       
                       {/* Floating Status Pill */}
                       <div className="absolute top-6 left-6 flex gap-2 z-20">

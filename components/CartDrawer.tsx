@@ -18,12 +18,14 @@ export function CartDrawer() {
       title: i.courseTitle,
       price: i.finalPriceEgp,
       rawPrice: i.unitPriceEgp,
+      imageUrl: i.courseImageUrl,
     })) ??
     guestItems.map((g) => ({
       id: g.courseId,
       title: g.courseTitle,
       price: g.priceEgp,
       rawPrice: g.priceEgp,
+      imageUrl: g.courseImageUrl,
     }));
 
   const subtotal = cart?.subtotalEgp ?? guestItems.reduce((s, g) => s + g.priceEgp, 0);
@@ -97,19 +99,41 @@ export function CartDrawer() {
                 items.map((item) => (
                   <div
                     key={item.id}
-                    className="rounded-2xl border border-ink/10 bg-canvas-soft/60 p-4 flex gap-4 items-start"
+                    className="rounded-[1.5rem] border border-ink/10 bg-canvas-soft/80 p-4 flex gap-4 items-center group hover:border-[#ff1a1a]/30 hover:shadow-lg hover:shadow-[#ff1a1a]/5 transition-all duration-300"
                   >
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-ink leading-snug">{item.title}</p>
-                      <p className="text-sm font-black text-ink mt-1">{item.price} EGP</p>
+                    {/* Miniature Cover / Icon Placeholder */}
+                    <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-zinc-950 relative border border-ink/5">
+                      {item.imageUrl ? (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.title}
+                          loading="lazy"
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#1c0000] to-[#3a0000] flex flex-col items-center justify-center p-2 text-center overflow-hidden">
+                          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,26,26,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,26,26,0.02)_1px,transparent_1px)] bg-[size:10px_10px] pointer-events-none" />
+                          <ShoppingCart size={16} weight="fill" className="text-[#ff1a1a] drop-shadow-[0_0_6px_#ff1a1a] relative z-10" />
+                          <span className="text-[5px] font-black uppercase tracking-wider text-[#ff1a1a]/80 mt-1 relative z-10">GENZ</span>
+                        </div>
+                      )}
                     </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-ink leading-snug group-hover:text-brand transition-colors truncate">{item.title}</p>
+                      <p className="text-xs font-black text-ink mt-1 flex items-center gap-1.5">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#ff1a1a]" />
+                        {item.price} EGP
+                      </p>
+                    </div>
+                    
                     <button
                       type="button"
                       onClick={() => handleRemove(item.id, item.title)}
-                      className="shrink-0 p-2.5 rounded-xl text-negative hover:bg-negative/10 transition-colors"
+                      className="shrink-0 w-9 h-9 rounded-xl text-negative border border-transparent hover:border-negative/20 hover:bg-negative/5 flex items-center justify-center transition-all active:scale-90"
                       aria-label="Remove from cart"
                     >
-                      <Trash size={20} weight="bold" />
+                      <Trash size={18} weight="bold" />
                     </button>
                   </div>
                 ))

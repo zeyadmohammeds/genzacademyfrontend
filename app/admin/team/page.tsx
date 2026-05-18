@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import { getAdminUsers, toggleUserActive, updateUserRole } from "@/lib/api";
 import Link from "next/link";
 import { useToast } from "@/lib/toast-context";
-import { UsersFour, ShieldCheck, Plus, ArrowLeft, CheckCircle, XCircle, FloppyDisk } from "@phosphor-icons/react";
+import { UsersFour, ShieldCheck, Plus, ArrowLeft, CheckCircle, XCircle, FloppyDisk, FileCsv } from "@phosphor-icons/react";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonTable } from "@/components/ui/Skeleton";
+import { exportToCsv } from "@/lib/csv-export";
 
 const ROLE_OPTIONS = [
   { value: "academy_admin", label: "Admin", color: "bg-red-100 text-red-700" },
@@ -47,8 +50,6 @@ export default function AdminTeamPage() {
     }
   };
 
-  if (loading) return <div className="page-loader"><div className="spinner" /></div>;
-
   return (
     <div className="w-full px-4 sm:px-6 lg:px-12 pt-4 sm:pt-6 pb-24">
       <div className="mb-6 sm:mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -59,17 +60,28 @@ export default function AdminTeamPage() {
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-black text-zinc-900 tracking-tight mb-2">Team & Roles</h1>
           <p className="text-zinc-500 font-medium">Manage Academy staff, roles, and access permissions.</p>
         </div>
-        <button className="w-full sm:w-auto bg-zinc-900 text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-black transition-colors flex items-center justify-center gap-2 shadow-lg">
-          <Plus size={18} weight="bold" /> Invite Staff
-        </button>
+        <div className="flex items-center gap-3">
+          {team.length > 0 && (
+            <button onClick={() => exportToCsv(team.map((m: any) => ({ Name: m.displayName || m.email, Email: m.email, Role: m.role, Status: m.isActive ? "Active" : "Inactive", Joined: m.createdAt })), "team")}
+              className="px-5 py-3 bg-zinc-50 border border-black/10 rounded-2xl font-bold text-sm text-zinc-700 flex items-center gap-2 hover:bg-zinc-100 transition-colors micro-hover">
+              <FileCsv size={18} weight="bold" /> Export CSV
+            </button>
+          )}
+          <button className="bg-zinc-900 text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-black transition-colors flex items-center justify-center gap-2 shadow-lg btn-micro">
+            <Plus size={18} weight="bold" /> Invite Staff
+          </button>
+        </div>
       </div>
 
-      <div className="bg-white rounded-[1.5rem] sm:rounded-[2.5rem] p-4 sm:p-8 shadow-sm border border-black/5">
-        {team.length === 0 ? (
-          <div className="text-center py-16">
-            <UsersFour size={48} weight="fill" className="text-zinc-200 mx-auto mb-4" />
-            <p className="text-zinc-500 font-medium">No team members found.</p>
-          </div>
+      <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm border border-black/5">
+        {loading ? (
+          <SkeletonTable rows={6} cols={6} />
+        ) : team.length === 0 ? (
+          <EmptyState
+            icon={<UsersFour size={32} className="text-zinc-300" />}
+            title="No team members found"
+            description="Invite staff members to get started."
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[750px]">

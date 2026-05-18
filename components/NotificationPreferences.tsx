@@ -8,6 +8,7 @@ import {
   DEFAULT_NOTIFICATION_SETTINGS,
 } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
+import { PremiumSwitch } from "@/components/PremiumControls";
 import { Bell, EnvelopeSimple, ChatCircle, DeviceMobile, FloppyDisk } from "@phosphor-icons/react";
 
 export function NotificationPreferences() {
@@ -84,10 +85,10 @@ export function NotificationPreferences() {
               <p className="text-xs text-mute font-medium">Bell tray & session alerts</p>
             </div>
           </div>
-          <label className="relative inline-flex cursor-pointer items-center">
-            <input type="checkbox" className="peer sr-only" checked={settings.inAppEnabled} onChange={toggle("inAppEnabled")} />
-            <span className="h-7 w-12 rounded-full bg-zinc-200 peer-checked:bg-brand after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-5 shadow-inner" />
-          </label>
+          <PremiumSwitch
+            checked={settings.inAppEnabled}
+            onChange={(val) => setSettings(prev => ({ ...prev, inAppEnabled: val }))}
+          />
         </li>
 
         <li className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-canvas-soft/80 border border-ink/10">
@@ -100,10 +101,10 @@ export function NotificationPreferences() {
               <p className="text-xs text-mute font-medium">Welcome, receipts, session reminders</p>
             </div>
           </div>
-          <label className="relative inline-flex cursor-pointer items-center">
-            <input type="checkbox" className="peer sr-only" checked={settings.emailEnabled} onChange={toggle("emailEnabled")} />
-            <span className="h-7 w-12 rounded-full bg-zinc-200 peer-checked:bg-brand after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-5 shadow-inner" />
-          </label>
+          <PremiumSwitch
+            checked={settings.emailEnabled}
+            onChange={(val) => setSettings(prev => ({ ...prev, emailEnabled: val }))}
+          />
         </li>
 
         <li className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-canvas-soft/80 border border-ink/10">
@@ -116,10 +117,10 @@ export function NotificationPreferences() {
               <p className="text-xs text-mute font-medium">Optional number override below</p>
             </div>
           </div>
-          <label className="relative inline-flex cursor-pointer items-center">
-            <input type="checkbox" className="peer sr-only" checked={settings.whatsAppEnabled} onChange={toggle("whatsAppEnabled")} />
-            <span className="h-7 w-12 rounded-full bg-zinc-200 peer-checked:bg-brand after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-5 shadow-inner" />
-          </label>
+          <PremiumSwitch
+            checked={settings.whatsAppEnabled}
+            onChange={(val) => setSettings(prev => ({ ...prev, whatsAppEnabled: val }))}
+          />
         </li>
 
         <li className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-canvas-soft/80 border border-ink/10">
@@ -132,10 +133,10 @@ export function NotificationPreferences() {
               <p className="text-xs text-mute font-medium">Critical alerts only</p>
             </div>
           </div>
-          <label className="relative inline-flex cursor-pointer items-center">
-            <input type="checkbox" className="peer sr-only" checked={settings.smsEnabled} onChange={toggle("smsEnabled")} />
-            <span className="h-7 w-12 rounded-full bg-zinc-200 peer-checked:bg-brand after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-5 shadow-inner" />
-          </label>
+          <PremiumSwitch
+            checked={settings.smsEnabled}
+            onChange={(val) => setSettings(prev => ({ ...prev, smsEnabled: val }))}
+          />
         </li>
       </ul>
 

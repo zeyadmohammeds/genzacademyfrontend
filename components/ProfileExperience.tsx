@@ -6,6 +6,8 @@ import { useAuth } from "@/lib/auth-context";
 import { updateProfile } from "@/lib/api";
 import { Camera, Medal, PencilSimple, User, EnvelopeSimple, Phone, GraduationCap, CheckCircle } from "@phosphor-icons/react";
 import { useToast } from "@/lib/toast-context";
+import { useFormValidation } from "@/hooks/useFormValidation";
+import { ValidatedField, ValidatedInput, ValidatedTextarea } from "@/components/ui/ValidatedInput";
 
 export function ProfileExperience() {
   const { user, refresh } = useAuth();
@@ -19,10 +21,25 @@ export function ProfileExperience() {
   });
   const { toast } = useToast();
 
+  const rules = {
+    firstName: { required: "First name is required", maxLength: { value: 50, message: "Max 50 characters" } },
+    lastName: { required: "Last name is required", maxLength: { value: 50, message: "Max 50 characters" } },
+    phoneNumber: {
+      custom: (val: string) =>
+        val && val.length > 0 && !/^[\d\s+\-()]{7,20}$/.test(val)
+          ? "Enter a valid phone number"
+          : null
+    },
+  };
+
+  const { getError, validate, touch, touchAll } = useFormValidation(rules);
+
   if (!user) return null;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    touchAll();
+    if (!validate(form)) return;
     setSaving(true);
     try {
       await updateProfile({
@@ -112,53 +129,49 @@ export function ProfileExperience() {
              
 {isEditing ? (
                 <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">First Name</label>
-                    <input 
+                  <ValidatedField label="First Name" error={getError("firstName")} touched={true}>
+                    <ValidatedInput
                       value={form.firstName}
-                      onChange={e => setForm({...form, firstName: e.target.value})}
-                      className="w-full bg-canvas-soft border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-brand/20 transition-all" 
+                      onChange={e => { setForm({...form, firstName: e.target.value}); touch("firstName"); }}
+                      error={getError("firstName")}
                     />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Last Name</label>
-                    <input 
+                  </ValidatedField>
+                  <ValidatedField label="Last Name" error={getError("lastName")} touched={true}>
+                    <ValidatedInput
                       value={form.lastName}
-                      onChange={e => setForm({...form, lastName: e.target.value})}
-                      className="w-full bg-canvas-soft border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-brand/20 transition-all" 
+                      onChange={e => { setForm({...form, lastName: e.target.value}); touch("lastName"); }}
+                      error={getError("lastName")}
                     />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Phone Number</label>
-                    <input 
+                  </ValidatedField>
+                  <ValidatedField label="Phone Number" error={getError("phoneNumber")} touched={true}>
+                    <ValidatedInput
                       value={form.phoneNumber}
-                      onChange={e => setForm({...form, phoneNumber: e.target.value})}
+                      onChange={e => { setForm({...form, phoneNumber: e.target.value}); touch("phoneNumber"); }}
                       placeholder="+20 123 456 7890"
-                      className="w-full bg-canvas-soft border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-brand/20 transition-all" 
+                      error={getError("phoneNumber")}
                     />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Email</label>
-                    <input 
+                  </ValidatedField>
+                  <ValidatedField label="Email">
+                    <input
                       value={user?.email || ""}
                       disabled
-                      className="w-full bg-zinc-100 border-none rounded-2xl px-5 py-4 text-sm font-bold text-zinc-400 cursor-not-allowed" 
+                      className="w-full bg-zinc-100 border-none rounded-2xl px-5 py-4 text-sm font-bold text-zinc-400 cursor-not-allowed"
                     />
-                  </div>
-                  <div className="flex flex-col gap-2 md:col-span-2">
-                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Personal Bio / Vision</label>
-                    <textarea 
-                      rows={4} 
-                      placeholder="What drives your learning?"
-                      value={form.bio}
-                      onChange={e => setForm({...form, bio: e.target.value})}
-                      className="w-full bg-canvas-soft border-none rounded-2xl px-5 py-4 text-sm font-medium focus:ring-2 focus:ring-brand/20 transition-all resize-none"
-                    />
+                  </ValidatedField>
+                  <div className="md:col-span-2">
+                    <ValidatedField label="Personal Bio / Vision">
+                      <ValidatedTextarea
+                        rows={4}
+                        placeholder="What drives your learning?"
+                        value={form.bio}
+                        onChange={e => setForm({...form, bio: e.target.value})}
+                      />
+                    </ValidatedField>
                   </div>
                   <div className="md:col-span-2 flex justify-end mt-4">
-                     <button 
+                     <button
                        disabled={saving}
-                       className="bg-zinc-900 text-white text-sm font-black px-10 py-4 rounded-2xl hover:bg-black shadow-lg transition-all active:scale-95 disabled:opacity-50"
+                       className="bg-zinc-900 text-white text-sm font-black px-10 py-4 rounded-2xl hover:bg-black shadow-lg transition-all active:scale-95 disabled:opacity-50 btn-micro"
                      >
                        {saving ? "Synchronizing..." : "Update Intelligence"}
                      </button>

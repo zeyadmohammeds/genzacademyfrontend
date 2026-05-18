@@ -42,10 +42,14 @@ export function AuthExperience() {
       }
       
       const u = await refresh();
-      if (u && !u.profileCompleted) {
-        router.push("/onboarding");
-      } else {
-        router.push("/dashboard");
+      if (u) {
+        const role = u.role?.toLowerCase() || "";
+        const isStaff = ["academy_admin", "admin", "engineer", "cta"].includes(role);
+        if (isStaff || u.profileCompleted) {
+          router.push(isStaff ? "/admin" : "/dashboard");
+        } else {
+          router.push("/onboarding");
+        }
       }
     } catch (err: any) {
       let msg = err.message || "Login failed";
@@ -82,7 +86,9 @@ export function AuthExperience() {
            <div className="w-24 h-24 relative mb-8">
               <div className="absolute inset-0 rounded-full border-4 border-white/5 animate-pulse"></div>
               <div className="absolute inset-0 rounded-full border-t-4 border-brand animate-spin"></div>
-              <div className="absolute inset-0 flex items-center justify-center text-white font-display font-black text-xl">GZ</div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <img src="/logoss.png" alt="Logo" className="w-12 h-12 object-contain drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]" />
+              </div>
            </div>
            <h2 className="text-white font-display text-2xl font-bold tracking-tight mb-2">Initiating Protocol</h2>
            <p className="text-zinc-500 text-sm font-medium">Connecting to Google Intelligence Hub...</p>
@@ -95,8 +101,8 @@ export function AuthExperience() {
            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-brand via-transparent to-transparent pointer-events-none"></div>
            
            <div className="relative z-10">
-             <div className="w-12 h-12 rounded-[14px] bg-white/5 flex items-center justify-center mb-16 border border-white/10">
-               <span className="text-white font-display font-black text-xl tracking-tighter">GZ</span>
+             <div className="w-16 h-16 rounded-[14px] bg-white/5 flex items-center justify-center mb-16 border border-white/10 shadow-[0_4px_24px_rgba(255,26,26,0.2)] hover:scale-105 transition-transform cursor-pointer">
+               <img src="/logoss.png" alt="GZ" className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
              </div>
              
              <h1 className="font-display text-6xl font-black text-white leading-[0.9] tracking-tight mb-8">

@@ -10,6 +10,7 @@ type GuestItem = {
   courseTitle: string;
   courseSlug: string;
   priceEgp: number;
+  courseImageUrl?: string;
 };
 
 type CartContextValue = {
@@ -74,6 +75,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           courseTitle: course.title,
           courseSlug: course.slug,
           priceEgp: course.priceEgp,
+          courseImageUrl: course.coverImageUrl || course.imageUrl,
         };
         setGuestItems(prev => {
           const next = prev.some(g => g.courseId === course.id) ? prev : [...prev, item];
@@ -89,6 +91,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         courseTitle: course.title,
         courseSlug: course.slug,
         priceEgp: course.priceEgp,
+        courseImageUrl: course.coverImageUrl || course.imageUrl,
       };
       setGuestItems(prev => {
         const next = prev.some(g => g.courseId === course.id) ? prev : [...prev, item];
@@ -99,10 +102,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const removeItem = useCallback(async (itemId: string) => {
-    if (user && cart) {
+    if (user) {
       setLoading(true);
       try {
-        await apiRemoveFromCart(itemId);
+        let targetId = itemId;
+        if (cart) {
+          const item = cart.items.find(i => i.id === itemId || i.courseId === itemId);
+          if (item) {
+            targetId = item.id;
+          }
+        }
+        await apiRemoveFromCart(targetId);
         await refreshCart();
       } catch {
         // silent

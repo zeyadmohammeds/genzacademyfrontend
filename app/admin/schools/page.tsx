@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { getAdminSchools } from "@/lib/api";
 import Link from "next/link";
 import { Buildings, Plus, ArrowLeft } from "@phosphor-icons/react";
+import { SkeletonTable } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function AdminSchoolsPage() {
   const [schools, setSchools] = useState<any[]>([]);
@@ -13,7 +15,7 @@ export default function AdminSchoolsPage() {
     getAdminSchools().then(setSchools).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="page-loader"><div className="spinner" /></div>;
+  if (loading) return <div className="w-full px-4 sm:px-6 lg:px-12 pt-4 sm:pt-6 pb-24"><SkeletonTable rows={5} cols={4} /></div>;
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-12 pt-4 sm:pt-6 pb-24">
@@ -31,10 +33,7 @@ export default function AdminSchoolsPage() {
       </div>
       <div className="bg-white rounded-[1.5rem] sm:rounded-[2.5rem] p-4 sm:p-8 shadow-sm border border-black/5">
         {schools.length === 0 ? (
-          <div className="text-center py-16">
-            <Buildings size={48} weight="fill" className="text-zinc-200 mx-auto mb-4" />
-            <p className="text-zinc-500 font-medium">No partner schools yet.</p>
-          </div>
+          <EmptyState icon={<Buildings size={32} weight="fill" />} title="No partner schools yet." />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {schools.map((s, idx) => (

@@ -30,13 +30,17 @@ import {
   CurrencyDollar,
   ChartBar,
   UsersFour,
+  PlayCircle,
   ClipboardText,
+  CodeIcon,
+  CodesandboxLogoIcon,
 } from "@phosphor-icons/react";
 import { useAuth } from "@/lib/auth-context";
 
 const studentNav = [
   { href: "/dashboard", icon: SquaresFour, label: "Dashboard" },
   { href: "/courses", icon: BookBookmark, label: "Catalog" },
+  { href: "/playground", icon:CodesandboxLogoIcon, label: "Playground"},
   { href: "/dashboard/courses", icon: Folder, label: "My Courses" },
   { href: "/applications", icon: ClipboardText, label: "Applications" },
   { href: "/dashboard/sessions", icon: CalendarCheck, label: "Sessions" },
@@ -117,12 +121,15 @@ export function SidebarNav() {
     >
       {/* Top Branding/Logo Area */}
 
-      <button onClick={() => setCollapsed(!collapsed)} className={`flex items-center mb-10 px-6 ${collapsed ? 'justify-center' : 'justify-start'} hover:text-brand cursor-pointer`}>
-        <div className="w-12 h-12 rounded-xl bg-canvas-soft/10 flex items-center justify-center shrink-0 shadow-inner border border-brand/35 hover:border-brand hover:scale-110 transition-all">
-          <span className="font-display font-black text-xl text-brand">GZ</span>
+      <button onClick={() => setCollapsed(!collapsed)} className={`flex items-center mb-10 px-6 ${collapsed ? 'justify-center' : 'justify-start'} group cursor-pointer relative h-12 w-full`}>
+        {/* Collapsed state logo */}
+        <div className={`absolute left-6 w-12 h-12 flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.87,0,0.13,1)] ${collapsed ? 'opacity-100 transform-none' : 'opacity-0 scale-50 pointer-events-none'}`}>
+          <img src="/logoss.png" alt="GenZCoders" className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_2px_12px_rgba(255,26,26,0.3)]" />
         </div>
-        <div className={`overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.87,0,0.13,1)] whitespace-nowrap ml-3 ${collapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
-          <span className="font-display font-bold tracking-tight text-lg text-canvas">GenZCoders</span>
+        
+        {/* Expanded state logo */}
+        <div className={`absolute left-6 h-10 w-[180px] flex items-center transition-all duration-500 ease-[cubic-bezier(0.87,0,0.13,1)] origin-left ${collapsed ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 transform-none'}`}>
+          <img src="/logo.png" alt="GenZCoders" className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-[0_2px_12px_rgba(255,26,26,0.3)]" />
         </div>
       </button>
 
@@ -159,8 +166,8 @@ export function SidebarNav() {
               href={item.href}
               className={`group relative flex items-center rounded-xl transition-all duration-500 ease-out active:scale-[0.95] overflow-hidden ${
                 isExact || isActive
-                  ? "bg-brand text-brand-fg shadow-[0_8px_20px_-6px_rgba(159,232,112,0.45)]" 
-                  : "bg-transparent text-mute hover:bg-canvas-soft/10 hover:text-canvas"
+                  ? "bg-brand text-brand-fg shadow-[0_4px_16px_rgba(255,26,26,0.4)] border border-[#ff1a1a]/20" 
+                  : "bg-transparent text-mute hover:bg-white/5 hover:text-white"
               } ${collapsed ? 'w-14 h-14 mx-auto justify-center' : 'w-full h-14 px-4'}`}
             >
               <Icon size={22} weight={isExact || isActive ? "fill" : "duotone"} className="shrink-0" />

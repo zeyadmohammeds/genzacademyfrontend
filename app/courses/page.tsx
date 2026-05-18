@@ -8,6 +8,7 @@ import type { Course } from "@/lib/types";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowRight, Sparkle, BookmarkSimple, ShoppingCart, MagnifyingGlass } from "@phosphor-icons/react";
+import { CourseIcon } from "@/components/IconMapper";
 
 export default function CoursesCatalogPage() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -25,23 +26,25 @@ export default function CoursesCatalogPage() {
   if (loading) return <div className="page-loader"><div className="spinner" /></div>;
 
   const filtered = courses.filter(c => {
-    const matchesFilter = filter === "all" || c.level.toLowerCase().includes(filter);
-    const matchesSearch = !query || c.title.toLowerCase().includes(query) || c.shortDescription.toLowerCase().includes(query);
+    const matchesFilter = filter === "all" || (c.level || "").toLowerCase() === filter;
+    const matchesSearch = !query || 
+      (c.title || "").toLowerCase().includes(query) || 
+      (c.shortDescription || "").toLowerCase().includes(query);
     return matchesFilter && matchesSearch;
   });
   
+  const uniqueLevels = Array.from(new Set(courses.map(c => c.level).filter(Boolean)));
   const filters = [
     { id: "all", label: "All Tracks" },
-    { id: "beginner", label: "Beginner" },
-    { id: "intermediate", label: "Intermediate" },
-    { id: "advanced", label: "Advanced" },
-    { id: "maker", label: "Maker" },
+    ...uniqueLevels.map(lvl => ({
+      id: lvl.toLowerCase(),
+      label: lvl
+    }))
   ];
 
   const handleAdd = async (course: Course) => {
     if (isInCart(course.id)) {
-      const itemId = cart?.items.find(i => i.courseId === course.id)?.id || course.id;
-      await removeItem(itemId);
+      await removeItem(course.id);
       toast(`${course.title} removed from cart`, "info");
     } else {
       await addItem(course);
@@ -85,12 +88,26 @@ export default function CoursesCatalogPage() {
           const theme = colors[idx % 4];
 
           return (
-            <div key={course.id} className={`${theme.bg} rounded-[2rem] p-6 shadow-sm border border-black/5 relative group hover:-translate-y-1 transition-transform duration-300 flex flex-col`}>
+            <div 
+              key={course.id} 
+              className={`${theme.bg} rounded-[2rem] p-6 shadow-sm relative group hover:-translate-y-1 transition-transform duration-300 flex flex-col ${
+                isInCart(course.id) ? "ring-4 ring-zinc-950 border-transparent shadow-lg scale-[1.01]" : "border border-black/5"
+              }`}
+            >
               <div className="flex justify-between items-start mb-6">
-                <span className={`px-3 py-1 ${theme.badgeBg} ${theme.badgeText} text-xs font-bold rounded-lg ${theme.border !== 'border-brand-hover' ? 'border ' + theme.border : ''}`}>
-                  {course.level} · {course.minimumAge}+{course.maximumAge ? `-${course.maximumAge}` : ""}
-                </span>
-                <span className="text-2xl">{course.iconName ?? "📘"}</span>
+                <div className="flex flex-col gap-1">
+                  <span className={`px-3 py-1 ${theme.badgeBg} ${theme.badgeText} text-[10px] font-bold rounded-lg ${theme.border !== 'border-brand-hover' ? 'border ' + theme.border : ''} w-fit`}>
+                    {course.level} · {course.minimumAge}+{course.maximumAge ? `-${course.maximumAge}` : ""}
+                  </span>
+                  {isInCart(course.id) && (
+                    <span className="text-[9px] font-black tracking-widest text-zinc-950 uppercase bg-brand-hover border border-zinc-950/20 px-2 py-0.5 rounded-full w-fit">
+                      Selected in Cart
+                    </span>
+                  )}
+                </div>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-white/50 shadow-inner`}>
+                  <CourseIcon iconName={course.iconName} className="w-5 h-5 text-zinc-900" size={20} />
+                </div>
               </div>
               
               <div className="flex-1">
@@ -141,7 +158,7 @@ export default function CoursesCatalogPage() {
           <h2 className="text-3xl font-display font-bold leading-tight mb-2">Not sure where to start?</h2>
           <p className="text-zinc-400 font-medium max-w-md">Take our quick placement quiz to find the perfect track for your skills and age level.</p>
         </div>
-        <Link href="/courses" className="px-8 py-4 bg-brand hover:bg-brand-hover text-brand-fg rounded-2xl font-bold text-lg shadow-[0_8px_20px_-6px_rgba(159,232,112,0.45)] transition-all active:scale-[0.98] flex items-center gap-2 whitespace-nowrap">
+        <Link href="/quiz" className="px-8 py-4 bg-brand hover:bg-brand-hover text-brand-fg rounded-2xl font-bold text-lg shadow-[0_8px_20px_-6px_rgba(159,232,112,0.45)] transition-all active:scale-[0.98] flex items-center gap-2 whitespace-nowrap">
           Take Placement Quiz <ArrowRight size={20} weight="bold" />
         </Link>
       </div>

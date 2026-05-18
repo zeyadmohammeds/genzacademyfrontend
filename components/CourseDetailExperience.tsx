@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, ArrowRight, Clock, UsersThree, ShoppingCart, Sparkle, CheckCircle, BookOpen, Lightning } from "@phosphor-icons/react";
+import { CourseIcon } from "@/components/IconMapper";
 import type { Course, CourseRound } from "@/lib/types";
 import { useAuth } from "@/lib/auth-context";
 import { useCart } from "@/lib/cart-context";
@@ -25,8 +27,7 @@ export function CourseDetailExperience({ course, rounds }: { course: Course; rou
     setAddingToCart(true);
     try {
       if (inCart) {
-        const itemId = cart?.items.find(i => i.courseId === course.id)?.id || course.id;
-        await removeItem(itemId);
+        await removeItem(course.id);
         toast(`${course.title} removed from cart`, "info");
       } else {
         await addItem(course);
@@ -49,9 +50,18 @@ export function CourseDetailExperience({ course, rounds }: { course: Course; rou
       </Link>
 
       {/* Hero Banner */}
-      <div className="bg-ink rounded-[3rem] p-8 lg:p-14 text-white mb-10 relative overflow-hidden shadow-xl">
-        <div className="absolute top-[-40%] right-[-15%] w-[500px] h-[500px] bg-brand rounded-full blur-[180px] opacity-20"></div>
-        <div className="absolute bottom-[-30%] left-[-10%] w-[400px] h-[400px] bg-[#7c3aed] rounded-full blur-[150px] opacity-15"></div>
+      <div className="bg-ink rounded-[3rem] p-8 lg:p-14 text-white mb-10 relative overflow-hidden shadow-xl min-h-[320px] flex flex-col justify-end">
+        {course.coverImageUrl ? (
+          <>
+            <Image src={course.coverImageUrl} alt={course.title} fill className="object-cover opacity-50" />
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
+          </>
+        ) : (
+          <>
+            <div className="absolute top-[-40%] right-[-15%] w-[500px] h-[500px] bg-brand rounded-full blur-[180px] opacity-20"></div>
+            <div className="absolute bottom-[-30%] left-[-10%] w-[400px] h-[400px] bg-[#7c3aed] rounded-full blur-[150px] opacity-15"></div>
+          </>
+        )}
         
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-10">
           <div className="flex-1 max-w-2xl">
@@ -59,9 +69,12 @@ export function CourseDetailExperience({ course, rounds }: { course: Course; rou
               <span className="px-4 py-2 bg-white/10 text-white/90 text-[10px] font-bold uppercase tracking-[0.2em] rounded-full border border-white/10">
                 {course.level}
               </span>
-              <span className="px-4 py-2 bg-brand-hover/20 text-brand text-[10px] font-bold uppercase tracking-[0.2em] rounded-full border border-brand-hover/20">
+              <span className="px-4 py-2 bg-brand-hover/20 text-brand text-[10px] font-bold uppercase tracking-[0.2em] rounded-full border border-brand-hover/20 backdrop-blur-md">
                 Ages {course.minimumAge}+
               </span>
+              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md border border-white/10">
+                <CourseIcon iconName={course.iconName} className="w-5 h-5 text-white" size={20} />
+              </div>
             </div>
             
             <h1 className="font-display text-4xl lg:text-6xl font-black tracking-tight leading-[1.05] mb-6">
@@ -194,7 +207,7 @@ export function CourseDetailExperience({ course, rounds }: { course: Course; rou
               {user && (
                 <Link 
                   href={`/apply?course=${course.slug}`} 
-                  className="w-full py-4 bg-ink hover:bg-black text-white rounded-2xl font-bold text-lg transition-colors flex items-center justify-center gap-3"
+                  className="w-full py-4 bg-zinc-950 hover:bg-zinc-800 text-white rounded-2xl font-black uppercase tracking-wider text-sm transition-all duration-300 flex items-center justify-center gap-3 active:scale-[0.98] shadow-md shadow-zinc-950/10"
                 >
                   Apply Now <Sparkle size={18} weight="fill" />
                 </Link>
@@ -202,7 +215,7 @@ export function CourseDetailExperience({ course, rounds }: { course: Course; rou
               
               {!user && (
                 <Link 
-                  href="/auth" 
+                  href={`/auth?returnUrl=/courses/${course.slug}`}
                   className="w-full py-3 bg-white border border-black/10 text-zinc-700 rounded-2xl font-bold text-sm transition-colors text-center hover:border-black/30"
                 >
                   Sign in to apply

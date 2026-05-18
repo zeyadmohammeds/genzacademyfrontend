@@ -91,9 +91,12 @@ export function SiteNav() {
     }
   };
 
+  const userRoleLower = user?.role?.toLowerCase() || "";
+  const isStaff = userRoleLower === "academy_admin" || userRoleLower === "engineer" || userRoleLower === "cta";
+
   const links = !user
     ? publicLinks
-    : user.role === "admin" || user.role === "engineer"
+    : isStaff
     ? staffLinks
     : studentLinks;
 
@@ -117,12 +120,8 @@ export function SiteNav() {
         </div>
       )}
       <header className={`site-nav ${scrolled ? "scrolled" : ""}`}>
-        <Link href="/" className="brand-mark" aria-label="ElSewedy GenZ Coders home">
-          <div className="brand-symbol">GZ</div>
-          <div className="flex flex-col">
-            <strong className="text-ink leading-none font-bold">GenZ Coders</strong>
-            <small className="text-[10px] text-mute font-semibold uppercase tracking-widest mt-1">ElSewedy Academy</small>
-          </div>
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity" aria-label="ElSewedy GenZ Coders home">
+          <img src="/logo.png" alt="GenZCoders" className="h-10 w-auto object-contain" />
         </Link>
 
         <nav className="nav-links-wrap" aria-label="Primary navigation">

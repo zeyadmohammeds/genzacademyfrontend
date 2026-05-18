@@ -6,6 +6,8 @@ import { UserPlus, ShieldCheck, MagnifyingGlass, Trash, Sparkle } from "@phospho
 import { useToast } from "@/lib/toast-context";
 import Link from "next/link";
 import { ArrowLeft } from "@phosphor-icons/react";
+import { SkeletonTable } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 type AcademyUser = {
   id: string;
@@ -44,7 +46,7 @@ export default function AdminUsersPage() {
     u.displayName.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) return <div className="page-loader"><div className="spinner" /></div>;
+  if (loading) return <div className="w-full px-4 sm:px-6 lg:px-12 pt-4 sm:pt-6 pb-24"><SkeletonTable rows={5} cols={4} /></div>;
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-12 pt-4 sm:pt-6 pb-24">
@@ -80,10 +82,7 @@ export default function AdminUsersPage() {
         </div>
 
         {filteredUsers.length === 0 ? (
-          <div className="text-center py-16">
-            <UserPlus size={48} weight="fill" className="text-zinc-200 mx-auto mb-4" />
-            <p className="text-zinc-500 font-medium">No users found.</p>
-          </div>
+          <EmptyState icon={<UserPlus size={32} weight="fill" />} title="No users found." />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[550px]">

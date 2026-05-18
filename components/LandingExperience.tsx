@@ -22,6 +22,7 @@ import {
 import type { Course, CourseRound, LeaderboardEntry } from "@/lib/types";
 import { useAuth } from "@/lib/auth-context";
 import { motion, AnimatePresence } from "framer-motion";
+import { CourseIcon } from "@/components/IconMapper";
 
 type LandingExperienceProps = {
   courses: Course[];
@@ -61,7 +62,7 @@ export function LandingExperience({ courses, rounds, leaderboard }: LandingExper
         className="max-w-[1400px] mx-auto mb-24 bg-white rounded-[3rem] p-8 md:p-16 shadow-sm border border-black/5 relative overflow-hidden flex flex-col md:flex-row items-center gap-12"
       >
         <div className="absolute top-[-20%] right-[-10%] w-96 h-96 bg-brand-hover rounded-full blur-[100px] opacity-40"></div>
-        <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-[#c2f0ff] rounded-full blur-[100px] opacity-40"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-[#ffe6e6] rounded-full blur-[100px] opacity-40"></div>
         
         <div className="flex-1 relative z-10">
           <motion.span 
@@ -117,7 +118,7 @@ export function LandingExperience({ courses, rounds, leaderboard }: LandingExper
              transition={{ delay: 0.5, type: "spring", stiffness: 60 }}
              className="relative w-full max-w-md aspect-square"
           >
-            <div className="absolute inset-0 bg-[#e4d3ff] rounded-[3rem] rotate-6 scale-105 shadow-sm border border-[#7c3aed]/10 transition-transform duration-700 hover:rotate-12"></div>
+            <div className="absolute inset-0 bg-[#ffcccc] rounded-[3rem] rotate-6 scale-105 shadow-sm border border-[#cc0000]/10 transition-transform duration-700 hover:rotate-12"></div>
             <div className="absolute inset-0 bg-zinc-950 rounded-[3rem] p-8 shadow-2xl flex flex-col items-center justify-center text-center z-10 -rotate-3 hover:rotate-0 transition-transform duration-500 overflow-hidden group">
                <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.05)_50%,transparent_75%,transparent_100%)] bg-[length:250%_250%] animate-shimmer"></div>
                
@@ -136,7 +137,7 @@ export function LandingExperience({ courses, rounds, leaderboard }: LandingExper
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 1 + (idx * 0.1) }}
-                      src={`https://api.dicebear.com/7.x/notionists/svg?seed=U${i}&backgroundColor=ffd5dc,c0aede,b6e3f4,ffe58f`} 
+                      src={`https://api.dicebear.com/7.x/notionists/svg?seed=U${i}&backgroundColor=ffe6e6,ffcccc,ffb3b3,ff9999`} 
                       className="w-14 h-14 rounded-full border-4 border-zinc-950 shadow-md relative z-10" 
                       alt="Student" 
                       style={{ zIndex: 10 - idx }}
@@ -205,18 +206,18 @@ export function LandingExperience({ courses, rounds, leaderboard }: LandingExper
             </div>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="bg-[#e4d3ff] rounded-[2.5rem] p-10 shadow-sm border border-[#7c3aed]/10 group hover:-translate-y-1 transition-transform">
-            <div className="w-16 h-16 bg-white/50 text-[#7c3aed] rounded-2xl flex items-center justify-center mb-8">
+          <motion.div variants={itemVariants} className="bg-[#ffcccc] rounded-[2.5rem] p-10 shadow-sm border border-[#cc0000]/10 group hover:-translate-y-1 transition-transform">
+            <div className="w-16 h-16 bg-white/50 text-[#cc0000] rounded-2xl flex items-center justify-center mb-8">
               <Brain size={36} weight="fill" />
             </div>
             <h3 className="text-2xl font-display font-black text-zinc-900 mb-4 tracking-tight">Automated Grading</h3>
             <p className="text-zinc-700 font-medium leading-relaxed">Smart assessments provide instant feedback, allowing engineers to focus on complex code reviews rather than multiple-choice grading.</p>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="lg:col-span-2 bg-[#c2f0ff] rounded-[2.5rem] p-10 shadow-sm border border-[#0284c7]/10 group hover:-translate-y-1 transition-transform relative overflow-hidden">
+          <motion.div variants={itemVariants} className="lg:col-span-2 bg-[#ffe6e6] rounded-[2.5rem] p-10 shadow-sm border border-[#ff1a1a]/10 group hover:-translate-y-1 transition-transform relative overflow-hidden">
             <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center">
               <div className="flex-1">
-                <div className="w-16 h-16 bg-white/50 text-[#0284c7] rounded-2xl flex items-center justify-center mb-8">
+                <div className="w-16 h-16 bg-white/50 text-[#ff1a1a] rounded-2xl flex items-center justify-center mb-8">
                   <Users size={36} weight="fill" />
                 </div>
                 <h3 className="text-3xl font-display font-black text-zinc-900 mb-4 tracking-tight">Connected Ecosystem</h3>
@@ -267,8 +268,8 @@ export function LandingExperience({ courses, rounds, leaderboard }: LandingExper
                   <span className={`px-4 py-2 ${theme.badgeBg} ${theme.badgeText} text-xs font-bold rounded-xl tracking-wide uppercase`}>
                     {course.level}
                   </span>
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl ${theme.badgeBg} shadow-sm`}>
-                    {course.iconName ?? "💻"}
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${theme.badgeBg} shadow-sm`}>
+                    <CourseIcon iconName={course.iconName} className="w-7 h-7 text-zinc-900" size={28} />
                   </div>
                 </div>
                 
@@ -325,7 +326,7 @@ export function LandingExperience({ courses, rounds, leaderboard }: LandingExper
                 <p className="text-zinc-400 text-sm">Every student builds real-world applications and hardware from day one. No dry theory.</p>
               </div>
               <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-sm">
-                <Lightbulb size={32} weight="fill" className="text-[#c2f0ff] mb-4" />
+                <Lightbulb size={32} weight="fill" className="text-[#ffe6e6] mb-4" />
                 <h4 className="text-xl font-bold text-white mb-2">Future-Ready</h4>
                 <p className="text-zinc-400 text-sm">Mastering AI, advanced robotics, and software architecture to lead the global tech shift.</p>
               </div>
@@ -396,7 +397,7 @@ export function LandingExperience({ courses, rounds, leaderboard }: LandingExper
               <ul className="space-y-4 mb-12 flex-1">
                 {plan.features.map((feature, fIdx) => (
                   <li key={fIdx} className={`flex items-start gap-3 text-sm font-bold ${plan.textColor === 'text-white' ? 'text-zinc-300' : 'text-zinc-700'}`}>
-                    <CheckCircle size={22} weight="fill" className={plan.textColor === 'text-white' ? 'text-brand' : 'text-[#20a07a]'} />
+                    <CheckCircle size={22} weight="fill" className={plan.textColor === 'text-white' ? 'text-brand' : 'text-[#cc0000]'} />
                     {feature}
                   </li>
                 ))}

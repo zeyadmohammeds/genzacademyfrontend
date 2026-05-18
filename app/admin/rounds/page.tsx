@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import { getAdminRounds, createAdminRound, updateRound, getAdminCourses } from "@/lib/api";
 import type { CourseRound, AdminCourse } from "@/lib/types";
-import { Plus, X, FloppyDisk, ArrowLeft, UsersThree, CalendarBlank, PencilSimple, Trash, Certificate, ArrowRight } from "@phosphor-icons/react";
+import { Plus, X, FloppyDisk, ArrowLeft, UsersThree, CalendarBlank, PencilSimple, Trash, Certificate, ArrowRight, FolderOpen } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useToast } from "@/lib/toast-context";
+import { PremiumSwitch } from "@/components/PremiumControls";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonCard } from "@/components/ui/Skeleton";
 
 export default function AdminRoundsPage() {
   const [rounds, setRounds] = useState<CourseRound[]>([]);
@@ -81,8 +84,6 @@ export default function AdminRoundsPage() {
     }
   });
 
-  if (loading) return <div className="page-loader"><div className="spinner" /></div>;
-
   return (
     <div className="w-full px-4 sm:px-6 lg:px-12 pt-4 sm:pt-6 pb-24">
       <div className="mb-6 sm:mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -93,64 +94,107 @@ export default function AdminRoundsPage() {
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-black text-zinc-900 tracking-tight mb-2">Cohort Orchestration</h1>
           <p className="text-zinc-500 font-medium">Manage educational cycles, enrollment capacity, and start dates.</p>
         </div>
-        <button onClick={openCreate} className="w-full sm:w-auto bg-zinc-900 text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-black transition-colors flex items-center justify-center gap-2 shadow-lg">
+        <button onClick={openCreate} className="w-full sm:w-auto bg-zinc-900 text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-black transition-colors flex items-center justify-center gap-2 shadow-lg btn-micro">
           <Plus size={18} weight="bold" /> New Round
         </button>
       </div>
 
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
+        </div>
+      ) : rounds.length === 0 ? (
+        <EmptyState
+          icon={<FolderOpen size={32} className="text-zinc-300" />}
+          title="No cohorts yet"
+          description="Create your first cohort round to start enrolling students."
+          action={
+            <button onClick={openCreate} className="px-5 py-2.5 bg-ink text-white rounded-full text-sm font-bold hover:bg-zinc-800 transition-colors">
+              Create First Round
+            </button>
+          }
+        />
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {rounds.map((r) => (
-          <div key={r.id} className="bg-white rounded-[1.5rem] sm:rounded-[2.5rem] p-5 sm:p-8 shadow-sm border border-black/5 hover:border-black/10 transition-all flex flex-col justify-between group">
+          <div key={r.id} className="bg-white rounded-[2.5rem] p-6 sm:p-8 shadow-md border border-black/5 hover:border-black/10 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-zinc-200 via-brand to-zinc-950 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div>
-              <div className="flex justify-between items-start mb-5">
+              <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h2 className="text-xl font-display font-bold text-zinc-900">{r.name}</h2>
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{r.slug}</span>
+                  <h2 className="text-xl font-display font-black text-zinc-900 tracking-tight leading-none mb-1 group-hover:text-brand transition-colors">{r.name}</h2>
+                  <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest font-mono">{r.slug}</span>
                 </div>
-                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-                  r.status === "Active" ? "bg-blue-100 text-blue-700" : "bg-brand-hover text-zinc-900"
+                <span className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${
+                  r.status === "Active" ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-brand-hover text-zinc-900 border-brand-hover/10"
                 }`}>{r.status}</span>
               </div>
-              <div className="space-y-3 mb-5">
-                <div className="flex items-center gap-2.5 text-sm font-bold text-zinc-600">
-                  <Certificate size={18} weight="fill" className="text-zinc-300" />
-                  {r.courseTitle}
+              <div className="space-y-3.5 mb-6">
+                <div className="flex items-center gap-3 text-xs font-bold text-zinc-600">
+                  <div className="w-8 h-8 rounded-xl bg-zinc-50 border border-black/5 flex items-center justify-center text-zinc-400">
+                    <Certificate size={16} weight="fill" />
+                  </div>
+                  <span className="truncate max-w-[200px]">{r.courseTitle}</span>
                 </div>
-                <div className="flex items-center gap-2.5 text-sm font-bold text-zinc-600">
-                  <CalendarBlank size={18} weight="fill" className="text-zinc-300" />
-                  {r.startDate ? new Date(r.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'TBD'}
+                <div className="flex items-center gap-3 text-xs font-bold text-zinc-600">
+                  <div className="w-8 h-8 rounded-xl bg-zinc-50 border border-black/5 flex items-center justify-center text-zinc-400">
+                    <CalendarBlank size={16} weight="fill" />
+                  </div>
+                  <span>{r.startDate ? new Date(r.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'TBD'}</span>
                 </div>
               </div>
-              <div className="bg-zinc-50 rounded-2xl p-4 mb-5">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
-                    <UsersThree size={14} weight="bold" /> Capacity
+
+              {/* Progress and Capacity Visualizer */}
+              <div className="bg-zinc-50 rounded-2.5xl p-5 mb-6 border border-black/5 shadow-inner">
+                <div className="flex justify-between items-center mb-2.5">
+                  <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                    <UsersThree size={14} weight="bold" /> Real Enrolled Students
                   </span>
-                  <span className="text-sm font-bold text-zinc-900">{r.currentStudents} / {r.maxStudents}</span>
+                  <span className="text-xs font-black text-zinc-900 font-mono">
+                    {r.currentStudents} <span className="text-zinc-400">/ {r.maxStudents}</span>
+                  </span>
                 </div>
-                <div className="w-full h-2 bg-zinc-200 rounded-full overflow-hidden">
-                  <div className={`h-full transition-all ${r.currentStudents / r.maxStudents > 0.8 ? 'bg-red-500' : 'bg-blue-500'}`}
-                    style={{ width: `${Math.min((r.currentStudents / Math.max(r.maxStudents, 1)) * 100, 100)}%` }} />
+                <div className="w-full h-2.5 bg-zinc-200/60 rounded-full overflow-hidden relative">
+                  <div 
+                    className={`h-full transition-all duration-1000 ease-out rounded-full ${
+                      (r.currentStudents / Math.max(r.maxStudents, 1)) >= 0.9 
+                        ? 'bg-brand' 
+                        : (r.currentStudents / Math.max(r.maxStudents, 1)) >= 0.5 
+                        ? 'bg-zinc-900' 
+                        : 'bg-zinc-400'
+                    }`}
+                    style={{ width: `${Math.min((r.currentStudents / Math.max(r.maxStudents, 1)) * 100, 100)}%` }} 
+                  />
                 </div>
-              </div>
-              <div className="flex items-center gap-2 mb-2">
-                <div className={`w-2 h-2 rounded-full ${r.isEnrollmentOpen ? 'bg-green-500' : 'bg-zinc-300'}`} />
-                <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{r.isEnrollmentOpen ? 'Open' : 'Closed'}</span>
+                <div className="mt-2.5 flex items-center gap-1.5">
+                  <div className={`w-1.5 h-1.5 rounded-full ${r.isEnrollmentOpen ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'}`} />
+                  <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
+                    {r.isEnrollmentOpen ? 'Admissions Active' : 'Admissions Paused'}
+                  </span>
+                </div>
               </div>
             </div>
-            <div className="flex items-center justify-between pt-4 border-t border-black/5">
-              <div className="flex gap-2">
-                <button onClick={() => openEdit(r, r.courseId)} className="p-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-600 rounded-xl transition-colors">
-                  <PencilSimple size={16} weight="bold" />
-                </button>
-              </div>
-              <button className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5">
-                View <ArrowRight size={14} weight="bold" />
+            
+            <div className="flex items-center justify-between pt-4 border-t border-black/5 shrink-0">
+              <button 
+                onClick={() => openEdit(r, r.courseId)} 
+                className="p-3 bg-zinc-50 border border-black/5 hover:border-black/10 hover:bg-zinc-100 text-zinc-600 rounded-2xl transition-all duration-200 active:scale-95 flex items-center justify-center"
+                title="Configure Cohort Settings"
+              >
+                <PencilSimple size={16} weight="bold" />
               </button>
+              
+              <Link 
+                href={`/admin/courses/${r.courseSlug || r.courseId}/rounds/${r.id}`}
+                className="px-5 py-3 bg-zinc-950 text-white hover:bg-brand rounded-2xl font-black uppercase tracking-wider text-[10px] shadow-md transition-all duration-200 active:scale-[0.98] flex items-center gap-2"
+              >
+                Enter Room <ArrowRight size={14} weight="bold" />
+              </Link>
             </div>
           </div>
         ))}
       </div>
+      )}
 
       {showForm && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/30 backdrop-blur-sm">
@@ -186,21 +230,17 @@ export default function AdminRoundsPage() {
                   <input type="number" {...field("maxStudents")} className="w-full px-4 py-3 bg-zinc-50 rounded-xl border border-black/5 font-bold" />
                 </div>
               </div>
-              <div className="flex flex-col gap-3 pt-1">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <div className={`w-12 h-6 rounded-full relative transition-colors ${form.isEnrollmentOpen ? 'bg-green-500' : 'bg-zinc-300'}`}>
-                    <input type="checkbox" className="hidden" {...field("isEnrollmentOpen")} />
-                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${form.isEnrollmentOpen ? 'left-7' : 'left-1'}`} />
-                  </div>
-                  <span className="font-bold text-sm text-zinc-900">Enrollment Open</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <div className={`w-12 h-6 rounded-full relative transition-colors ${form.requireEngineerApproval ? 'bg-purple-500' : 'bg-zinc-300'}`}>
-                    <input type="checkbox" className="hidden" {...field("requireEngineerApproval")} />
-                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${form.requireEngineerApproval ? 'left-7' : 'left-1'}`} />
-                  </div>
-                  <span className="font-bold text-sm text-zinc-900">Require Engineer Approval</span>
-                </label>
+              <div className="flex flex-col gap-4 pt-2">
+                <PremiumSwitch
+                  checked={!!form.isEnrollmentOpen}
+                  onChange={(val) => setForm(p => ({ ...p, isEnrollmentOpen: val }))}
+                  label="Enrollment Open"
+                />
+                <PremiumSwitch
+                  checked={!!form.requireEngineerApproval}
+                  onChange={(val) => setForm(p => ({ ...p, requireEngineerApproval: val }))}
+                  label="Require Engineer Approval"
+                />
               </div>
             </div>
             <div className="p-4 sm:p-6 border-t border-black/5 flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 justify-end">

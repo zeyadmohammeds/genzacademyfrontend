@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { UsersThree, ClipboardText, CalendarCheck, WarningCircle } from "@phosphor-icons/react";
+import { UsersThree, ClipboardText, CalendarCheck, WarningCircle, VideoCamera } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { getEngineerDashboard } from "@/lib/api";
@@ -58,19 +58,38 @@ export default function EngineerDashboardOverview() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-black/5">
            <h2 className="text-2xl font-display font-bold text-zinc-900 mb-6">Today's Schedule</h2>
-           {data?.upcomingSessions?.length > 0 ? (
-             <div className="space-y-4">
-               {data.upcomingSessions.map((session: any, idx: number) => (
-                 <div key={idx} className="p-4 bg-zinc-50 border border-black/5 rounded-2xl flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-zinc-900">{session.title}</div>
-                      <div className="text-xs text-zinc-500 font-medium">{session.time} • {session.group}</div>
-                    </div>
-                    <Link href={`/engineer/sessions`} className="px-4 py-2 bg-brand text-brand-fg rounded-xl text-xs font-bold hover:bg-brand-hover transition-colors">Start Room</Link>
-                 </div>
-               ))}
-             </div>
-           ) : (
+            {data?.upcomingSessions?.length > 0 ? (
+              <div className="space-y-4">
+                {data.upcomingSessions.map((session: any, idx: number) => (
+                  <div key={idx} className="p-4 bg-zinc-50 border border-black/5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                     <div>
+                       <div className="font-bold text-zinc-900">{session.title}</div>
+                       <div className="text-xs text-zinc-500 font-medium">{session.time} • {session.group}</div>
+                     </div>
+                     <div className="flex items-center gap-2 self-start sm:self-center">
+                       {session.zoomStartUrl ? (
+                         <a 
+                           href={session.zoomStartUrl} 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           className="px-4 py-2 bg-[#ff1a1a] text-white rounded-xl text-xs font-bold hover:bg-[#cc0000] transition-all flex items-center gap-1 shadow-md shadow-[#ff1a1a]/15"
+                         >
+                           <VideoCamera size={14} weight="fill" /> Start Zoom
+                         </a>
+                       ) : (
+                         <span className="px-3 py-1.5 bg-zinc-100 text-zinc-400 rounded-lg text-[10px] font-bold">Zoom Link Pending</span>
+                       )}
+                       <Link 
+                         href={`/engineer/sessions`} 
+                         className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-bold hover:bg-black transition-colors"
+                       >
+                         Manage
+                       </Link>
+                     </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
              <p className="text-zinc-500 font-medium">No sessions scheduled for today.</p>
            )}
         </div>
