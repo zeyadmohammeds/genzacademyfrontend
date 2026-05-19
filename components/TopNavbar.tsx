@@ -32,9 +32,9 @@ export function TopNavbar() {
   return (
     <header className="sticky top-0 w-full h-24 flex items-center justify-between px-4 md:px-10 pt-4 pb-4 bg-canvas-soft/90 backdrop-blur-xl z-40 shrink-0 border-b border-ink/10">
       {/* Left: Branding & Greeting */}
-      <div className="flex items-center gap-2">
-        <span className="hidden sm:inline text-mute font-medium text-sm">Welcome to</span>
-        <span className="text-brand font-display font-black text-lg md:text-xl tracking-tight">GenZ Coders</span>
+      <div className="flex items-center gap-2 mt-1">
+        <span className="hidden sm:inline text-mute font-medium text-lg">Welcome to</span>
+        <span className="text-brand font-display font-black text-lg md:text-xl tracking-tight">GenZCoders</span>
       </div>
 
       {/* Right: Search, Cart, Notifications, Profile */}
@@ -89,7 +89,7 @@ export function TopNavbar() {
         </button>
 
         {/* User Profile */}
-        <Link href="/profile" className="flex items-center gap-4 pl-4 cursor-pointer group border-l border-ink/10">
+        <Link href="/dashboard/profile" className="flex items-center gap-4 pl-4 cursor-pointer group border-l border-ink/10">
           <div className="w-11 h-11 rounded-xl overflow-hidden border border-ink/10 bg-canvas-soft shadow-sm group-hover:shadow-md transition-all group-hover:scale-105">
             <Image 
               src={`https://api.dicebear.com/7.x/notionists/svg?seed=${user?.displayName || "Kacie"}&backgroundColor=f0f0f0`}

@@ -83,7 +83,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       ) : (
         <div className="w-full min-h-[100dvh] relative">
-          {!isAuthPage && !isRoom && !isApplyPage && user && <SiteNav />}
+          {!isAuthPage && !isRoom && !isApplyPage && !isPlayground && user && <SiteNav />}
           {children}
         </div>
       )}

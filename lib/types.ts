@@ -154,6 +154,10 @@ export type CourseRoom = {
   classmates: Classmate[];
   quizzes?: QuizItem[];
   quizAttempts?: QuizAttemptSummary[];
+  courseSlug?: string;
+  courseImageUrl?: string;
+  difficulty?: string;
+  durationHours?: string;
 };
 
 export type Classmate = {

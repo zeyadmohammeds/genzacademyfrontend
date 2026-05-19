@@ -2,9 +2,27 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, ArrowRight, BookBookmark } from "@phosphor-icons/react";
+import { 
+  ArrowUpRight, ArrowRight, BookBookmark, ChartLineUp, 
+  Hourglass, UsersThree, PlayCircle, ClipboardText
+} from "@phosphor-icons/react";
 
-const imageFor = (seed: string) => `https://picsum.photos/seed/${seed}/1200/800`;
+// Curated high-fidelity Unsplash illustrations per course slug for elite visuals
+const COURSE_IMAGES: Record<string, string> = {
+  "scratch": "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?auto=format&fit=crop&w=1200&q=85",
+  "intro-cpp": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1200&q=85",
+  "advanced-cpp": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=85",
+  "robot-build": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=85",
+  "web-app-ai": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=85",
+};
+
+const COURSE_ICONS: Record<string, string> = {
+  "scratch": "🎮",
+  "intro-cpp": "💻",
+  "advanced-cpp": "⚡",
+  "robot-build": "🤖",
+  "web-app-ai": "🌐",
+};
 
 type Enrollment = {
   id: string;
@@ -20,30 +38,32 @@ type Enrollment = {
 };
 
 export function MyCoursesExperience({ enrollments }: { enrollments: Enrollment[] }) {
-  const activeEnrollments = enrollments.filter((e) => e.status === "Active" || e.status === "Accepted" || e.status === "Enrolled");
+  const activeEnrollments = enrollments.filter(
+    (e) => e.status === "Active" || e.status === "Accepted" || e.status === "Enrolled"
+  );
 
   return (
     <div className="w-full bg-canvas-soft min-h-screen font-body selection:bg-zinc-900 selection:text-white pb-32">
       
-      {/* Editorial Hero */}
+      {/* Premium Editorial Hero */}
       <section className="px-6 lg:px-12 pt-16 pb-12 lg:pt-24 lg:pb-20">
         <div className="max-w-[1400px] mx-auto">
           <div className="flex flex-col gap-6 max-w-4xl">
             <span className="text-zinc-500 font-bold tracking-widest text-xs uppercase flex items-center gap-4">
               <span className="w-8 h-px bg-zinc-300"></span>
-              Student Protocol
+              Secure Learning Protocol
             </span>
             <h1 className="font-display text-6xl lg:text-[7rem] font-black tracking-tighter leading-[0.85] text-zinc-950">
-              Active <br /> Deployments.
+              Active <br /> Enrollments.
             </h1>
             <p className="text-zinc-500 text-lg lg:text-xl max-w-xl leading-relaxed mt-4">
-              Access your current learning environments. Resume your progression and push to the next milestone.
+              Access your current learning environments. Resume your progression, enter secure live classrooms, and push to the next milestone.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Editorial Grid Layout */}
+      {/* Modern High-End Grid Section */}
       <section className="px-6 lg:px-12">
         <div className="max-w-[1400px] mx-auto border-t border-black/10 pt-16">
           {activeEnrollments.length === 0 ? (
@@ -53,75 +73,115 @@ export function MyCoursesExperience({ enrollments }: { enrollments: Enrollment[]
               </div>
               <span className="font-display text-4xl font-bold text-zinc-300 mb-4">No active deployments.</span>
               <p className="text-zinc-500 text-lg mb-8 max-w-md">You haven't been accepted into any protocols yet, or you haven't initialized any applications.</p>
-              <Link href="/courses" className="bg-ink text-canvas font-bold px-8 py-4 rounded-full shadow-lg hover:bg-zinc-800 transition-all duration-300 flex items-center gap-3 group">
-                Browse Directory <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              <Link href="/courses" className="bg-zinc-900 hover:bg-black text-white font-black px-8 py-4 rounded-3xl shadow-lg transition-all duration-300 flex items-center gap-3 group">
+                Browse Catalog <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-16">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-20">
               {activeEnrollments.map((enrollment) => {
                 const courseTitle = enrollment.courseTitle || `Course`;
+                const slug = enrollment.courseSlug || "";
                 
+                // Dynamically resolve image
+                const resolvedImageUrl = enrollment.courseImageUrl || COURSE_IMAGES[slug] || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=85";
+                const icon = COURSE_ICONS[slug] || "💻";
+
                 return (
                   <article 
                     key={enrollment.id}
                     className="group flex flex-col relative"
                   >
-                    <div className="relative w-full overflow-hidden rounded-[2.5rem] bg-zinc-950 mb-8 aspect-[16/9] shadow-md transform-gpu isolate border border-black/5">
-                      {enrollment.courseImageUrl ? (
-                        <Image 
-                          src={enrollment.courseImageUrl} 
-                          alt={courseTitle} 
-                          fill 
-                          className="object-cover scale-100 group-hover:scale-105 transition-transform duration-[1.5s] ease-[cubic-bezier(0.16,1,0.3,1)]"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#1c0000] to-[#3a0000] flex flex-col items-center justify-center p-6 text-center border border-white/5 rounded-[2.5rem]">
-                          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,26,26,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,26,26,0.03)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none" />
-                          <div className="w-14 h-14 rounded-2xl bg-[#ffe6e6]/10 flex items-center justify-center text-[#ff1a1a] mb-4 relative z-10 shadow-[0_0_20px_rgba(255,26,26,0.15)] group-hover:scale-110 transition-transform duration-500">
-                            <BookBookmark size={28} className="drop-shadow-[0_0_8px_#ff1a1a]" weight="fill" />
-                          </div>
-                          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#ff1a1a] relative z-10 mb-1">
-                            EL SEWEDY GENZ ACTIVE PROTOCOL
-                          </div>
-                          <div className="text-[11px] text-zinc-500 font-bold relative z-10 uppercase tracking-widest">{enrollment.cohortName}</div>
+                    {/* Advanced Immersive Aspect Container */}
+                    <div className="relative w-full overflow-hidden rounded-[3rem] bg-zinc-950 mb-8 aspect-[16/10] shadow-[0_12px_40px_rgba(0,0,0,0.08)] border border-black/5 group-hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)] transition-all duration-700 isolate">
+                      
+                      {/* Course Image */}
+                      <Image 
+                        src={resolvedImageUrl} 
+                        alt={courseTitle} 
+                        fill 
+                        className="object-cover scale-100 group-hover:scale-105 transition-transform duration-[1.5s] ease-[cubic-bezier(0.16,1,0.3,1)] filter brightness-95 group-hover:brightness-90"
+                      />
+
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 z-10"></div>
+                      
+                      {/* Floating Info Badges on top */}
+                      <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-20">
+                        {/* Course Icon Badge */}
+                        <div className="w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center text-xl shadow-lg">
+                          {icon}
                         </div>
-                      )}
-                      
-                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/35 transition-colors duration-500 z-10"></div>
-                      
-                      {/* Floating Status Pill */}
-                      <div className="absolute top-6 left-6 flex gap-2 z-20">
-                        <span className="bg-white/90 backdrop-blur-md text-zinc-950 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full shadow-sm">
-                          {enrollment.progressPercent.toFixed(0)}% Complete
-                        </span>
+
+                        {/* Progress Badge */}
+                        <div className="bg-white/90 backdrop-blur-md text-zinc-950 text-[10px] font-black uppercase tracking-widest px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2">
+                          <ChartLineUp size={14} className="text-brand" weight="bold" />
+                          <span>{enrollment.progressPercent.toFixed(0)}% Complete</span>
+                        </div>
                       </div>
                       
-                      {/* Action Overlaid */}
-                      <div className="absolute inset-0 flex items-center justify-center z-20 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none">
-                        <Link href={`/room/${enrollment.courseId}`} className="bg-white text-zinc-950 font-bold px-8 py-4 rounded-full shadow-2xl flex items-center gap-3 pointer-events-auto transform hover:scale-105 transition-transform">
-                          Enter Control Room <ArrowUpRight size={18} weight="bold" />
+                      {/* Floating Bottom Course Overview Text */}
+                      <div className="absolute bottom-8 left-8 right-8 z-20 flex items-end justify-between gap-6">
+                        <div className="min-w-0">
+                          <span className="text-[10px] font-black text-brand uppercase tracking-[0.2em] mb-1.5 block">
+                            Active Study Stream
+                          </span>
+                          <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight leading-none truncate">
+                            {courseTitle}
+                          </h3>
+                        </div>
+
+                        {/* Control Room Link */}
+                        <Link 
+                          href={`/room/${enrollment.courseId}`} 
+                          className="bg-white text-zinc-950 hover:bg-zinc-900 hover:text-white font-black px-6 py-3.5 rounded-2xl shadow-xl border border-black/5 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 pointer-events-auto flex items-center gap-2 text-xs uppercase tracking-wider shrink-0"
+                          style={{ color: '#09090b' }}
+                        >
+                          <span>Enter Room</span> <ArrowUpRight size={16} weight="bold" />
                         </Link>
                       </div>
                     </div>
 
-                    <div className="flex flex-col flex-1 pl-2">
-                      <div className="flex items-start justify-between gap-4 mb-4 border-b border-black/10 pb-6">
-                        <h2 className="font-display text-4xl font-black text-zinc-900 leading-[1.1] tracking-tight line-clamp-2">
-                          {courseTitle}
-                        </h2>
+                    {/* Metadata Description Info below card */}
+                    <div className="flex flex-col flex-1 px-2">
+                      <div className="flex items-center justify-between gap-4 border-b border-black/5 pb-4 mb-4">
+                        <div className="flex items-center gap-2 text-xs font-black text-zinc-400 uppercase tracking-widest">
+                          <Hourglass size={14} className="text-zinc-500" />
+                          <span>Active Cohort:</span>
+                          <span className="text-zinc-900 font-black">{enrollment.cohortName}</span>
+                        </div>
+                        
+                        <span className="inline-flex items-center gap-1.5 text-[9px] font-black text-green-600 bg-green-50 border border-green-200/50 px-3 py-1 rounded-full uppercase tracking-wider">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                          Protocol Running
+                        </span>
                       </div>
                       
-                      <div className="flex items-center justify-between mt-auto pt-2">
-                        <div className="flex items-center gap-4 text-sm font-bold text-zinc-500 uppercase tracking-widest">
-                           <span>Cohort:</span>
-                           <span className="text-mint flex items-center gap-2">
-                             <span className="w-2 h-2 rounded-full bg-mint animate-pulse"></span>
-                             {enrollment.cohortName}
-                           </span>
+                      {enrollment.currentSessionTitle && (
+                        <div className="p-4 bg-zinc-50 border border-zinc-100 rounded-2xl flex items-center justify-between mb-4">
+                          <div className="min-w-0">
+                            <span className="block text-[9px] font-black text-zinc-400 uppercase tracking-wider mb-0.5">Current Syllabus Block</span>
+                            <span className="block text-xs font-black text-zinc-800 truncate">{enrollment.currentSessionTitle}</span>
+                          </div>
+                          <Link 
+                            href={`/room/${enrollment.courseId}`}
+                            className="text-[10px] font-black text-brand uppercase tracking-wider hover:underline shrink-0 ml-4"
+                          >
+                            Resume Session →
+                          </Link>
                         </div>
-                        <Link href={`/room/${enrollment.courseId}`} className="text-zinc-900 font-bold flex items-center gap-2 group/link">
-                          Connect <ArrowRight size={16} weight="bold" className="group-hover/link:translate-x-1 transition-transform" />
+                      )}
+
+                      <div className="flex items-center justify-between mt-auto">
+                        <span className="text-xs font-bold text-zinc-400">
+                          {enrollment.nextSessionAt ? `Next lecture scheduled for ${enrollment.nextSessionAt}` : "Cohort currently in progress."}
+                        </span>
+                        
+                        <Link 
+                          href={`/room/${enrollment.courseId}`} 
+                          className="text-zinc-900 hover:text-brand font-black text-xs uppercase tracking-widest flex items-center gap-1.5 transition-colors group/link"
+                        >
+                          <span>Room Terminal</span>
+                          <ArrowRight size={14} weight="bold" className="group-hover/link:translate-x-1 transition-transform" />
                         </Link>
                       </div>
                     </div>

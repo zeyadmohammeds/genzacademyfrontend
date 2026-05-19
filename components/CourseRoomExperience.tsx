@@ -20,6 +20,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/lib/toast-context";
 import { submitTask, uploadCourseMaterial, updateCourseStep, requestZoomSignature, getCourseRoomQuizzes, getRecommendedCourses } from "@/lib/api";
 
+const COURSE_IMAGES: Record<string, string> = {
+  "scratch": "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?auto=format&fit=crop&w=1280&q=85",
+  "intro-cpp": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1280&q=85",
+  "advanced-cpp": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1280&q=85",
+  "robot-build": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1280&q=85",
+  "web-app-ai": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1280&q=85",
+};
+
 export function CourseRoomExperience({ room, isAdminView = false }: { room: CourseRoom, isAdminView?: boolean }) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<"overview" | "sessions" | "curriculum" | "materials" | "next-zoom" | "quizzes" | "tasks" | "classmates">("overview");
@@ -144,7 +152,7 @@ export function CourseRoomExperience({ room, isAdminView = false }: { room: Cour
           {/* Hero Video Card */}
           <div className="w-full aspect-video bg-zinc-900 rounded-[2.5rem] relative overflow-hidden shadow-2xl group cursor-pointer">
             <Image 
-              src={`https://picsum.photos/seed/${room.courseId}/1280/720`} 
+              src={room.courseImageUrl || (room.courseSlug ? COURSE_IMAGES[room.courseSlug] : null) || `https://picsum.photos/seed/${room.courseId}/1280/720`} 
               alt={room.courseTitle} 
               fill 
               priority
@@ -163,12 +171,12 @@ export function CourseRoomExperience({ room, isAdminView = false }: { room: Cour
               <div className="hidden sm:flex items-center gap-4 bg-black/40 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10">
                 <div className="flex flex-col items-center">
                    <span className="text-[10px] font-bold text-zinc-400">DURATION</span>
-                   <span className="text-xs font-black">12.5 Hours</span>
+                   <span className="text-xs font-black">{room.durationHours || "12.5 Hours"}</span>
                 </div>
                 <div className="w-px h-6 bg-white/20"></div>
                 <div className="flex flex-col items-center">
                    <span className="text-[10px] font-bold text-zinc-400">DIFFICULTY</span>
-                   <span className="text-xs font-black">Advanced</span>
+                   <span className="text-xs font-black">{room.difficulty || "Advanced"}</span>
                 </div>
               </div>
             </div>
@@ -707,44 +715,279 @@ function CurriculumCard({ week, idx, isExpanded, onToggle, isAdmin }: { week: Se
 
 function TaskCard({ task, isAdmin, userId }: { task: LearningTask, isAdmin: boolean, userId?: string }) {
   const isPending = task.status === 'pending';
+  const [taskStatus, setTaskStatus] = useState(task.status);
   const { toast } = useToast();
   
+  // Submit modal states
+  const [isOpen, setIsOpen] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [github, setGithub] = useState("");
+  const [liveUrl, setLiveUrl] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [step, setStep] = useState<"idle" | "uploading" | "analyzing" | "verifying" | "success">("idle");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!github && !liveUrl && !notes) {
+      toast("Please provide at least a repository link, a demo URL, or summary notes.", "error");
+      return;
+    }
+
+    setSubmitting(true);
+    setStep("uploading");
+    
+    // Smooth progress micro-animations
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          return 100;
+        }
+        return prev + 10;
+      });
+    }, 150);
+
+    await new Promise((resolve) => setTimeout(resolve, 1600));
+    setStep("analyzing");
+    await new Promise((resolve) => setTimeout(resolve, 1400));
+    setStep("verifying");
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+
+    try {
+      if (userId) {
+        await submitTask(task.id, userId, {
+          submissionText: notes,
+          repositoryUrl: github,
+          submissionUrl: liveUrl
+        });
+      }
+      setStep("success");
+      setTaskStatus("submitted");
+      toast("Task submitted successfully for review!", "success");
+      
+      setTimeout(() => {
+        setIsOpen(false);
+        // Reset states
+        setNotes("");
+        setGithub("");
+        setLiveUrl("");
+        setStep("idle");
+        setProgress(0);
+        setSubmitting(false);
+      }, 1500);
+    } catch (err: any) {
+      clearInterval(progressInterval);
+      toast(err.message || "Failed to submit task", "error");
+      setSubmitting(false);
+      setStep("idle");
+    }
+  };
+
   return (
-    <div className="bg-white rounded-[2.5rem] p-8 border border-black/5 shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between min-h-[280px]">
-       <div>
-          <div className="flex items-center justify-between mb-6">
-             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isPending ? 'bg-brand/10 text-brand' : 'bg-green-100 text-green-600'}`}>
-                {isPending ? <Cpu size={24} weight="duotone" /> : <CheckCircle size={24} weight="fill" />}
-             </div>
-             <div className="flex flex-col items-end">
-                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Due {task.dueAt}</span>
-             </div>
-          </div>
-          <h3 className="text-2xl font-black font-display text-zinc-900 mb-3 leading-tight">{task.title}</h3>
-          <p className="text-zinc-500 text-sm font-medium mb-8">{task.description}</p>
-       </div>
-       
-       <div className="flex items-center justify-between pt-6 border-t border-black/5 mt-4">
-          <div className="flex items-center gap-2">
-             <Sparkle size={18} weight="fill" className="text-brand-fg" />
-             <span className="text-sm font-black text-zinc-900">{task.xpReward} XP</span>
-          </div>
-          <button 
-            onClick={() => {
-               if (isAdmin) {
-                  toast("Grading interface active", "info");
-               } else if (isPending) {
-                  toast("Submit feature coming", "info");
-               }
-            }}
-            className={`px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${
-            isAdmin ? 'bg-brand-neutral text-zinc-950' : 
-            isPending ? 'bg-zinc-900 text-white hover:bg-black' : 'bg-zinc-100 text-zinc-400 cursor-not-allowed'
-          }`}>
-              {isAdmin ? 'Grade Submissions' : isPending ? 'Submit Work' : 'Graded'}
-          </button>
-       </div>
-    </div>
+    <>
+      <div className="bg-white rounded-[2.5rem] p-8 border border-black/5 shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between min-h-[280px] relative overflow-hidden">
+         {taskStatus === 'submitted' && (
+            <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/10 rounded-bl-full flex items-start justify-end p-4 pointer-events-none">
+              <CheckCircle size={24} weight="fill" className="text-green-500" />
+            </div>
+         )}
+         <div>
+            <div className="flex items-center justify-between mb-6">
+               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${taskStatus === 'pending' ? 'bg-brand/10 text-brand' : 'bg-green-100 text-green-600'}`}>
+                  {taskStatus === 'pending' ? <Cpu size={24} weight="duotone" /> : <CheckCircle size={24} weight="fill" />}
+               </div>
+               <div className="flex flex-col items-end">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mr-8">Due {task.dueAt}</span>
+               </div>
+            </div>
+            <h3 className="text-2xl font-black font-display text-zinc-900 mb-3 leading-tight">{task.title}</h3>
+            <p className="text-zinc-500 text-sm font-medium mb-8 leading-relaxed">{task.description}</p>
+         </div>
+         
+         <div className="flex items-center justify-between pt-6 border-t border-black/5 mt-4">
+            <div className="flex items-center gap-2">
+               <Sparkle size={18} weight="fill" className="text-[#ff1a1a]" />
+               <span className="text-sm font-black text-zinc-900">{task.xpReward} XP</span>
+            </div>
+            <button 
+              onClick={() => {
+                 if (isAdmin) {
+                    toast("Grading interface active via Instructor Control Room.", "info");
+                 } else if (taskStatus === 'pending') {
+                    setIsOpen(true);
+                 }
+              }}
+              disabled={!isAdmin && taskStatus !== 'pending'}
+              className={`px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${
+              isAdmin ? 'bg-zinc-950 text-white' : 
+              taskStatus === 'pending' ? 'bg-[#ff1a1a] text-white hover:bg-[#cc0000] shadow-md shadow-[#ff1a1a]/20 hover:-translate-y-0.5 active:translate-y-0' : 'bg-green-50 text-green-600 border border-green-100 cursor-not-allowed'
+            }`}>
+                {isAdmin ? 'Grade Submissions' : taskStatus === 'pending' ? 'Submit Work' : 'Submitted'}
+            </button>
+         </div>
+      </div>
+
+      {/* Advanced Animated Glassmorphism Submission Drawer / Modal */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="fixed inset-0 z-[600] bg-black/60 backdrop-blur-md flex items-center justify-center p-4"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, y: 20 }} 
+              animate={{ scale: 1, y: 0 }} 
+              exit={{ scale: 0.95, y: 20 }} 
+              className="bg-white rounded-[3rem] w-full max-w-2xl shadow-2xl border border-black/5 overflow-hidden flex flex-col"
+            >
+              {/* Modal Header */}
+              <div className="p-8 pb-6 bg-zinc-50/50 border-b border-black/5 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-zinc-900 text-white flex items-center justify-center shadow-lg shadow-black/10">
+                    <Code size={22} weight="bold" />
+                  </div>
+                  <div>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-[#ff1a1a]">Task Submission</span>
+                    <h3 className="font-display font-black text-xl text-zinc-900">{task.title}</h3>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => !submitting && setIsOpen(false)} 
+                  disabled={submitting}
+                  className="w-10 h-10 rounded-full bg-white hover:bg-zinc-100 flex items-center justify-center text-zinc-400 border border-black/5 transition-colors disabled:opacity-50"
+                >
+                  <X size={20} weight="bold" />
+                </button>
+              </div>
+
+              {/* Form Content */}
+              <form onSubmit={handleSubmit} className="p-8 space-y-6 flex-1 overflow-y-auto max-h-[75vh]">
+                {step === "idle" ? (
+                  <>
+                    <div className="bg-[#fff5f5] border border-[#ff1a1a]/10 p-5 rounded-2xl flex items-start gap-3">
+                      <Lightning size={20} weight="fill" className="text-[#ff1a1a] shrink-0 mt-0.5" />
+                      <p className="text-xs font-medium text-zinc-700 leading-relaxed">
+                        Submit your project to get graded. You can provide a link to your public code repository (GitHub, GitLab), your production live link, and include optional notes detailing your architectural decisions.
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* GitHub Link */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block">GitHub / Source Repository</label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
+                            <Code size={18} weight="bold" />
+                          </span>
+                          <input 
+                            type="url"
+                            placeholder="https://github.com/username/project"
+                            value={github}
+                            onChange={(e) => setGithub(e.target.value)}
+                            className="w-full pl-12 pr-4 py-4 bg-zinc-50 border border-black/5 rounded-2xl text-sm font-semibold text-zinc-950 placeholder-zinc-400 focus:outline-none focus:bg-white focus:border-[#ff1a1a] transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Production Link */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block">Production / Live Demo URL</label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
+                            <ShareNetwork size={18} weight="bold" />
+                          </span>
+                          <input 
+                            type="url"
+                            placeholder="https://my-app.vercel.app"
+                            value={liveUrl}
+                            onChange={(e) => setLiveUrl(e.target.value)}
+                            className="w-full pl-12 pr-4 py-4 bg-zinc-50 border border-black/5 rounded-2xl text-sm font-semibold text-zinc-950 placeholder-zinc-400 focus:outline-none focus:bg-white focus:border-[#ff1a1a] transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Explanation Notes */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block">Submission Notes / Summary</label>
+                        <textarea 
+                          rows={4}
+                          placeholder="Provide a brief summary of how you built this, core technologies, and key learnings..."
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                          className="w-full p-5 bg-zinc-50 border border-black/5 rounded-3xl text-sm font-semibold text-zinc-950 placeholder-zinc-400 focus:outline-none focus:bg-white focus:border-[#ff1a1a] transition-all resize-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-black/5 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Sparkle size={18} weight="fill" className="text-[#ff1a1a]" />
+                        <span className="text-xs font-black text-zinc-900">Yields +{task.xpReward} XP</span>
+                      </div>
+                      <button 
+                        type="submit"
+                        className="px-8 py-4 bg-zinc-900 text-white hover:bg-black rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-98"
+                      >
+                        Transmit Submission
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="py-12 flex flex-col items-center justify-center text-center">
+                    <div className="w-24 h-24 relative mb-8">
+                      {step === "uploading" && (
+                        <>
+                          <div className="absolute inset-0 rounded-full border-4 border-zinc-100 animate-pulse"></div>
+                          <div className="absolute inset-0 rounded-full border-t-4 border-[#ff1a1a] animate-spin"></div>
+                          <div className="absolute inset-0 flex items-center justify-center font-mono font-black text-sm text-[#ff1a1a]">
+                            {progress}%
+                          </div>
+                        </>
+                      )}
+                      {step === "analyzing" && (
+                        <div className="absolute inset-0 rounded-full bg-orange-50 border-2 border-orange-200 flex items-center justify-center animate-pulse text-orange-500">
+                          <Cpu size={36} weight="duotone" className="animate-spin duration-3000" />
+                        </div>
+                      )}
+                      {step === "verifying" && (
+                        <div className="absolute inset-0 rounded-full bg-blue-50 border-2 border-blue-200 flex items-center justify-center animate-pulse text-blue-500">
+                          <Gear size={36} weight="bold" className="animate-spin" />
+                        </div>
+                      )}
+                      {step === "success" && (
+                        <motion.div 
+                          initial={{ scale: 0.5, rotate: -45 }} 
+                          animate={{ scale: 1, rotate: 0 }} 
+                          className="absolute inset-0 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg shadow-green-500/30"
+                        >
+                          <CheckCircle size={44} weight="bold" />
+                        </motion.div>
+                      )}
+                    </div>
+
+                    <h4 className="font-display font-black text-2xl text-zinc-900 mb-2">
+                      {step === "uploading" && "Transmitting Code..."}
+                      {step === "analyzing" && "Static Code Analysis..."}
+                      {step === "verifying" && "Compiling and Verifying..."}
+                      {step === "success" && "Submission Received!"}
+                    </h4>
+                    <p className="text-zinc-500 font-bold text-xs max-w-sm leading-relaxed uppercase tracking-wider">
+                      {step === "uploading" && "Uploading resources to ElSewedy Secure Cloud Core..."}
+                      {step === "analyzing" && "Checking syntactical logic and architectural rules..."}
+                      {step === "verifying" && "Creating secure delivery record and updating leaderboard..."}
+                      {step === "success" && "Your project is queued for mentoring grading feedback."}
+                    </p>
+                  </div>
+                )}
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 

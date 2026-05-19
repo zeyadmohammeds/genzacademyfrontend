@@ -274,8 +274,8 @@ export async function apiDelete<T>(path: string, fallback?: T): Promise<T> {
 export const getCurrentUser = () =>
   apiGet<AuthUser | null>("/api/auth/me", null);
 
-export const updateProfile = (data: { firstName?: string; lastName?: string; bio?: string; phoneNumber?: string; interestsJson?: string }) =>
-  apiPut<any>("/api/profiles/me", data);
+export const updateProfile = (data: { firstName: string; lastName: string; bio?: string; phoneNumber?: string }) =>
+  apiPost<AuthUser>("/api/auth/update-profile", data);
 
 export const getGoogleAuthUrl = () => `${API_BASE}/api/auth/google`;
 
@@ -349,6 +349,9 @@ export const validatePromoCode = (code: string) =>
 // ─── Referrals ────────────────────────────────────────────────────────────────
 export const getReferralSummary = () =>
   apiGet<ReferralSummary | null>("/api/referrals/me", null);
+
+export const changePassword = (data: any) =>
+  apiPost<{ success: boolean }>("/api/auth/change-password", data);
 
 // ─── Applications ─────────────────────────────────────────────────────────────
 export const getPendingApplications = () =>
