@@ -11,8 +11,11 @@
    SignOut,
    User,
    X,
+   ShoppingCart,
  } from "@phosphor-icons/react";
  import { useAuth } from "@/lib/auth-context";
+ import { useCart } from "@/lib/cart-context";
+ import { useCartUi } from "@/lib/cart-ui-context";
  import { motion, AnimatePresence } from "framer-motion";
 
 const publicLinks = [
@@ -36,6 +39,8 @@ const staffLinks = [
 
 export function SiteNav() {
   const { user, loading, logout } = useAuth();
+  const { itemCount } = useCart();
+  const { openDrawer } = useCartUi();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("");
@@ -144,6 +149,20 @@ export function SiteNav() {
         </nav>
 
         <div className="nav-actions-wrap">
+          <button
+            type="button"
+            onClick={() => openDrawer()}
+            className="relative btn-portal flex items-center justify-center"
+            style={{ padding: "8px 12px", width: "40px", height: "40px", borderRadius: "50%" }}
+            aria-label="Shopping Cart"
+          >
+            <ShoppingCart size={20} weight="duotone" />
+            {itemCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[1rem] h-4 px-1 rounded-full bg-brand text-brand-fg text-[9px] font-black flex items-center justify-center border border-white shadow-md animate-bounce">
+                {itemCount}
+              </span>
+            )}
+          </button>
           {loading ? null : user ? (
             <div className="flex items-center gap-3">
               <Link href="/notifications" className="btn-portal" style={{ padding: "8px 12px" }}>

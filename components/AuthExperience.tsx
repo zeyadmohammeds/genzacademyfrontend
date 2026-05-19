@@ -44,13 +44,10 @@ export function AuthExperience() {
       
       const u = await refresh();
       if (u) {
-        const role = u.role?.toLowerCase() || "";
-        const isStaff = ["academy_admin", "admin", "engineer", "cta"].includes(role);
-        if (isStaff || u.profileCompleted) {
-          router.push(isStaff ? "/admin" : "/dashboard");
-        } else {
-          router.push("/onboarding");
-        }
+        const targetOrigin = window.location.origin.includes("localhost") 
+          ? window.location.origin 
+          : "https://genzacademy.vercel.app";
+        window.location.href = `${targetOrigin}/`;
       }
     } catch (err: any) {
       let msg = err.message || "Login failed";
@@ -90,16 +87,11 @@ export function AuthExperience() {
 
       const data = await res.json();
       if (data.success) {
-        const u = await refresh();
-        if (u) {
-          const role = u.role?.toLowerCase() || "";
-          const isStaff = ["academy_admin", "admin", "engineer", "cta"].includes(role);
-          if (isStaff || u.profileCompleted) {
-            router.push(isStaff ? "/admin" : "/dashboard");
-          } else {
-            router.push("/onboarding");
-          }
-        }
+        await refresh();
+        const targetOrigin = window.location.origin.includes("localhost") 
+          ? window.location.origin 
+          : "https://genzacademy.vercel.app";
+        window.location.href = `${targetOrigin}/`;
       }
     } catch (err: any) {
       setError(err.message || "Failed to sign in with Google.");

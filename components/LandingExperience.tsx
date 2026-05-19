@@ -269,7 +269,7 @@ export function LandingExperience({ courses, rounds, leaderboard }: LandingExper
                     {course.level}
                   </span>
                   <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${theme.badgeBg} shadow-sm`}>
-                    <CourseIcon iconName={course.iconName} className="w-7 h-7 text-zinc-900" size={28} />
+                    <CourseIcon iconName={course.iconName} className={`w-7 h-7 ${theme.text}`} size={28} />
                   </div>
                 </div>
                 

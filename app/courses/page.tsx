@@ -17,7 +17,8 @@ export default function CoursesCatalogPage() {
   const { addItem, removeItem, isInCart, cart } = useCart();
   const { toast } = useToast();
   const searchParams = useSearchParams();
-  const query = searchParams.get("q")?.toLowerCase() || "";
+  const query = searchParams.get("q") || "";
+  const [searchQuery, setSearchQuery] = useState(query);
 
   useEffect(() => {
     getCourses().then(setCourses).finally(() => setLoading(false));
@@ -27,9 +28,9 @@ export default function CoursesCatalogPage() {
 
   const filtered = courses.filter(c => {
     const matchesFilter = filter === "all" || (c.level || "").toLowerCase() === filter;
-    const matchesSearch = !query || 
-      (c.title || "").toLowerCase().includes(query) || 
-      (c.shortDescription || "").toLowerCase().includes(query);
+    const matchesSearch = !searchQuery || 
+      (c.title || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
+      (c.shortDescription || "").toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
   
@@ -53,21 +54,42 @@ export default function CoursesCatalogPage() {
   };
 
   return (
-    <div className="w-full px-10 py-8">
-      {/* Header & Tabs */}
-      <div className="flex items-end justify-between mb-8">
-        <h1 className="text-4xl font-display font-black tracking-tight text-zinc-900">
-          All courses
+    <div className="w-full px-4 md:px-10 py-12 bg-canvas-soft min-h-screen">
+      {/* Header Info */}
+      <div className="mb-12">
+        <span className="text-xs font-black uppercase tracking-widest text-brand bg-ink px-4 py-1.5 rounded-full mb-3 inline-block">
+          Curriculum Catalogue
+        </span>
+        <h1 className="text-4xl md:text-6xl font-display font-black tracking-tight text-zinc-900 leading-tight">
+          All Courses & Tracks
         </h1>
-        <div className="flex gap-2">
+        <p className="text-zinc-500 font-medium text-lg mt-2 max-w-2xl">
+          Learn project-first engineering with live mentoring, structured levels, and automated AI code feedback.
+        </p>
+      </div>
+
+      {/* Filter and Search Bar Row */}
+      <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 mb-10 pb-6 border-b border-black/5">
+        <div className="relative flex-1 max-w-md group">
+          <input 
+            type="text" 
+            placeholder="Search intelligence tracks..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full h-12 pl-12 pr-6 rounded-full border border-black/10 bg-white text-sm font-semibold text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-4 focus:ring-brand/25 focus:border-zinc-900 shadow-sm transition-all duration-300 group-hover:border-black/20"
+          />
+          <MagnifyingGlass size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-hover:text-zinc-600 transition-colors" />
+        </div>
+
+        <div className="flex flex-wrap gap-2">
           {filters.map(f => (
             <button 
               key={f.id} 
               onClick={() => setFilter(f.id)}
-              className={`px-5 py-2.5 rounded-full text-sm font-bold transition-colors shadow-sm ${
+              className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-sm active:scale-95 ${
                 filter === f.id 
-                  ? "bg-ink text-white shadow-md" 
-                  : "bg-white border border-black/10 text-zinc-700 hover:border-black/30"
+                  ? "bg-ink text-white shadow-md scale-105" 
+                  : "bg-white border border-black/10 text-zinc-700 hover:border-black/30 hover:bg-zinc-50"
               }`}
             >
               {f.label}
