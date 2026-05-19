@@ -28,6 +28,30 @@ const DASHBOARD_PREFIXES = [
   "/playground",
 ];
 
+const PUBLIC_ROUTES = [
+  "/",
+  "/auth",
+  "/about",
+  "/pricing",
+  "/faq",
+  "/schools",
+  "/team",
+  "/apply",
+];
+
+const PUBLIC_PREFIXES = [
+  "/courses",
+  "/playground",
+  "/cart",
+  "/apply/",
+];
+
+function isPublicPath(pathname: string | null): boolean {
+  if (!pathname) return false;
+  if (PUBLIC_ROUTES.includes(pathname)) return true;
+  return PUBLIC_PREFIXES.some(prefix => pathname === prefix || pathname.startsWith(prefix + "/"));
+}
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const pathname = usePathname();
@@ -41,12 +65,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   useEffect(() => {
-    if (!authLoading && !user && pathname !== "/auth" && !pathname.startsWith("/playground")) {
-      router.replace(`/auth?returnUrl=${encodeURIComponent(pathname)}`);
+    if (!authLoading && !user && !isPublicPath(pathname)) {
+      router.replace(`/auth?returnUrl=${encodeURIComponent(pathname || "/")}`);
     }
   }, [user, authLoading, pathname, router]);
 
-  if (authLoading || (!user && pathname !== "/auth")) {
+  if (authLoading || (!user && !isPublicPath(pathname))) {
     return (
       <div className="min-h-[100dvh] w-full flex items-center justify-center bg-canvas-soft">
         <div className="w-12 h-12 border-[4px] border-ink/10 border-t-brand rounded-full animate-spin shadow-[0_0_20px_rgba(255,59,48,0.3)]" />
@@ -83,7 +107,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       ) : (
         <div className="w-full min-h-[100dvh] relative">
-          {!isAuthPage && !isRoom && !isApplyPage && !isPlayground && user && <SiteNav />}
+          {!isAuthPage && !isRoom && !isApplyPage && !isPlayground && (user || isPublicPath(pathname)) && <SiteNav />}
           {children}
         </div>
       )}

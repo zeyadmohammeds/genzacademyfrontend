@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import Image from "next/image";
 import { ArrowRight, LockKey, EnvelopeSimple, User } from "@phosphor-icons/react";
 import { apiPost, API_BASE } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
+import Script from "next/script";
 
 export function AuthExperience() {
   const [tab, setTab] = useState<"login" | "register">("login");
@@ -69,16 +70,119 @@ export function AuthExperience() {
   }
 
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [googleInitialized, setGoogleInitialized] = useState(false);
+
+  // Client-side Google Token Handler
+  const handleGoogleCredentialResponse = async (response: any) => {
+    setIsRedirecting(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/google-token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken: response.credential }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || "Google token authentication failed");
+      }
+
+      const data = await res.json();
+      if (data.success) {
+        const u = await refresh();
+        if (u) {
+          const role = u.role?.toLowerCase() || "";
+          const isStaff = ["academy_admin", "admin", "engineer", "cta"].includes(role);
+          if (isStaff || u.profileCompleted) {
+            router.push(isStaff ? "/admin" : "/dashboard");
+          } else {
+            router.push("/onboarding");
+          }
+        }
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to sign in with Google.");
+      setIsRedirecting(false);
+    }
+  };
+
+  // Setup Google Identity Services Client
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const initializeGoogle = () => {
+      const google = (window as any).google;
+      if (google) {
+        try {
+          google.accounts.id.initialize({
+            client_id: "657065188070-80edljn8ugu9uinsbp1sd6e93a55f5bg.apps.googleusercontent.com",
+            callback: handleGoogleCredentialResponse,
+            auto_select: false,
+            cancel_on_tap_outside: true,
+          });
+
+          // Trigger One Tap if possible for high-end luxury feel
+          google.accounts.id.prompt((notification: any) => {
+            if (notification.isNotDisplayed()) {
+              console.log("Google One Tap: not displayed", notification.getNotDisplayedReason());
+            }
+          });
+
+          setGoogleInitialized(true);
+        } catch (err) {
+          console.error("Failed to initialize Google Identity Services:", err);
+        }
+      }
+    };
+
+    if ((window as any).google) {
+      initializeGoogle();
+    } else {
+      const handleGsiLoaded = () => initializeGoogle();
+      window.addEventListener("google-gsi-loaded", handleGsiLoaded);
+      return () => window.removeEventListener("google-gsi-loaded", handleGsiLoaded);
+    }
+  }, []);
+
   const handleGoogleLogin = () => {
     setIsRedirecting(true);
-    // Visual pause for "advanced" feel
-    setTimeout(() => {
-      window.location.href = `${API_BASE}/api/auth/google`;
-    }, 800);
+    setError(null);
+
+    const google = (window as any).google;
+    if (google && googleInitialized) {
+      // Programmatically trigger One Tap credential check
+      google.accounts.id.prompt((notification: any) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // If prompt fails or is skipped, fallback instantly to backend challenge redirection
+          const returnUrl = window.location.origin;
+          window.location.href = `${API_BASE}/api/auth/google?returnUrl=${encodeURIComponent(returnUrl)}`;
+        }
+      });
+      
+      // Auto-fallback check timer in case prompt gets completely ignored
+      setTimeout(() => {
+        if (isRedirecting) {
+          const returnUrl = window.location.origin;
+          window.location.href = `${API_BASE}/api/auth/google?returnUrl=${encodeURIComponent(returnUrl)}`;
+        }
+      }, 5000);
+    } else {
+      // Instant redirect to backend auth flow
+      const returnUrl = window.location.origin;
+      window.location.href = `${API_BASE}/api/auth/google?returnUrl=${encodeURIComponent(returnUrl)}`;
+    }
   };
 
   return (
     <div className="flex min-h-[100dvh] w-full bg-canvas-soft text-zinc-900 font-body relative">
+      <Script 
+        src="https://accounts.google.com/gsi/client" 
+        strategy="afterInteractive" 
+        onLoad={() => {
+          window.dispatchEvent(new Event("google-gsi-loaded"));
+        }}
+      />
       
       {/* Redirecting Overlay */}
       {isRedirecting && (
@@ -219,7 +323,7 @@ export function AuthExperience() {
                   type="button"
                   onClick={handleGoogleLogin}
                   disabled={loading || isRedirecting}
-                  className="w-full bg-white border border-black/5 text-zinc-900 font-bold text-sm py-4 rounded-2xl hover:bg-zinc-50 transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-3 disabled:opacity-50"
+                  className="w-full bg-white border border-black/10 text-zinc-900 font-bold text-sm py-4 rounded-2xl hover:bg-zinc-50 hover:border-black/20 transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-3 disabled:opacity-50"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -227,7 +331,7 @@ export function AuthExperience() {
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
-                  Google Intelligence
+                  Google Intelligence Protocol
                 </button>
             </form>
          </div>

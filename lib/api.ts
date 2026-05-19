@@ -277,7 +277,10 @@ export const getCurrentUser = () =>
 export const updateProfile = (data: { firstName: string; lastName: string; bio?: string; phoneNumber?: string }) =>
   apiPost<AuthUser>("/api/auth/update-profile", data);
 
-export const getGoogleAuthUrl = () => `${API_BASE}/api/auth/google`;
+export const getGoogleAuthUrl = (returnUrl?: string) => 
+  returnUrl 
+    ? `${API_BASE}/api/auth/google?returnUrl=${encodeURIComponent(returnUrl)}`
+    : `${API_BASE}/api/auth/google`;
 
 // ─── Courses ──────────────────────────────────────────────────────────────────
 export const getCourses = () =>
