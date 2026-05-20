@@ -91,7 +91,10 @@ export function AuthExperience() {
         const targetOrigin = window.location.origin.includes("localhost") 
           ? window.location.origin 
           : "https://genzacademy.vercel.app";
-        window.location.href = `${targetOrigin}/`;
+        
+        // Use destination from API response or default based on user state
+        const destination = data.destination || (data.user?.profileCompleted ? "/dashboard" : "/onboarding");
+        window.location.href = `${targetOrigin}${destination}`;
       }
     } catch (err: any) {
       setError(err.message || "Failed to sign in with Google.");
