@@ -9,6 +9,7 @@ import {
 } from "./api";
 import { useAuth } from "./auth-context";
 import { useSignalr } from "./signalr-context";
+import { useToast } from "./toast-context";
 
 export type AppNotification = {
   id: string;
@@ -16,6 +17,7 @@ export type AppNotification = {
   message: string;
   type: string;
   isRead: boolean;
+  destination?: string;
   createdAt: string;
 };
 
@@ -39,6 +41,7 @@ function mapNotification(raw: any): AppNotification {
     message: String(n.body ?? n.message ?? ""),
     type: String(n.type ?? "info"),
     isRead: n.status !== "Unread" && n.status !== undefined ? true : Boolean(n.isRead),
+    destination: n.destination ? String(n.destination) : undefined,
     createdAt: String(n.createdAt ?? ""),
   };
 }
@@ -46,6 +49,7 @@ function mapNotification(raw: any): AppNotification {
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { connected } = useSignalr();
+  const { toast } = useToast();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(false);
   const lastFetchRef = useRef(0);
@@ -76,10 +80,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       if (!detail) return;
       const n = mapNotification(detail);
       setNotifications(prev => [n, ...prev]);
+      toast(`${n.title}: ${n.message}`, "info");
     };
     window.addEventListener("signalr-notification", handler);
     return () => window.removeEventListener("signalr-notification", handler);
-  }, [user]);
+  }, [user, toast]);
 
   // Fallback polling when SignalR is disconnected
   useEffect(() => {

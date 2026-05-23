@@ -4,6 +4,7 @@ import { useState, useEffect, type FormEvent } from "react";
 import Image from "next/image";
 import { ArrowRight, LockKey, EnvelopeSimple, User } from "@phosphor-icons/react";
 import { apiPost, API_BASE } from "@/lib/api";
+import { S } from "@/lib/strings";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
@@ -32,11 +33,16 @@ export function AuthExperience() {
       if (tab === "login") {
         await apiPost("/api/auth/login", payload);
       } else {
+        const fullName = String(formData.displayName || "").trim();
+        const parts = fullName.split(/\s+/);
+        const firstName = parts[0] || "New";
+        const lastName = parts.slice(1).join(" ") || "User";
+
         await apiPost("/api/auth/register", {
           email: payload.email,
           password: payload.password,
-          firstName: String(formData.firstName || "New"),
-          lastName: String(formData.lastName || "User"),
+          firstName,
+          lastName,
           phoneNumber: null,
           referralCode: null
         });
@@ -63,15 +69,15 @@ export function AuthExperience() {
         window.location.href = `${targetOrigin}${destination}`;
       }
     } catch (err: any) {
-      let msg = err.message || "Login failed";
+      let msg = err.message || S.auth.errLoginFailed;
       if (msg.includes("Invalid email or password")) {
-        msg = "Invalid email or password. Please try again.";
+        msg = S.auth.errInvalidCredentials;
       } else if (msg.includes("locked")) {
-        msg = "Too many login attempts. Please try again later.";
+        msg = S.auth.errLocked;
       } else if (msg.includes("fetch")) {
-        msg = "Cannot connect to server. Please make sure the backend is running.";
+        msg = S.auth.errCannotConnect;
       } else if (msg.includes("email")) {
-        msg = "Please check your email and try again.";
+        msg = S.auth.errEmailIssue;
       }
       setError(msg);
     } finally {
@@ -110,7 +116,7 @@ export function AuthExperience() {
         window.location.href = `${targetOrigin}${destination}`;
       }
     } catch (err: any) {
-      setError(err.message || "Failed to sign in with Google.");
+      setError(err.message || S.auth.errGoogleFailed);
       setIsRedirecting(false);
     }
   };
@@ -124,7 +130,7 @@ export function AuthExperience() {
       if (google) {
         try {
           google.accounts.id.initialize({
-            client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "1017632556527-l847alsomgr7qsnmfo709alduqvtdbsb.apps.googleusercontent.com",
+            client_id: "1017632556527-l847alsomgr7qsnmfo709alduqvtdbsb.apps.googleusercontent.com",
             callback: handleGoogleCredentialResponse,
             auto_select: false,
             cancel_on_tap_outside: true,
@@ -202,8 +208,8 @@ export function AuthExperience() {
                 <img src="/logoss.png" alt="Logo" className="w-12 h-12 object-contain drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]" />
               </div>
            </div>
-           <h2 className="text-white font-display text-2xl font-bold tracking-tight mb-2">Initiating Protocol</h2>
-           <p className="text-zinc-500 text-sm font-medium">Connecting to Google Intelligence Hub...</p>
+           <h2 className="text-white font-display text-2xl font-bold tracking-tight mb-2">{S.auth.initiatingProtocol}</h2>
+           <p className="text-zinc-500 text-sm font-medium">{S.auth.connectingGoogle}</p>
         </div>
       )}
       
@@ -218,10 +224,10 @@ export function AuthExperience() {
              </div>
              
              <h1 className="font-display text-6xl font-black text-white leading-[0.9] tracking-tight mb-8">
-               Enter the <br/>Academy.
+               {S.auth.enterTheAcademy} <br/>{S.auth.academy}
              </h1>
              <p className="text-zinc-400 text-lg max-w-md leading-relaxed">
-               A high-end technical training ecosystem. Sign in to access your course rooms, submit tasks, and check your standing on the leaderboard.
+               {S.auth.heroSubtitle}
              </p>
            </div>
            
@@ -231,7 +237,7 @@ export function AuthExperience() {
                  <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Teacher&backgroundColor=ffe885" className="w-10 h-10 rounded-full border-2 border-zinc-950" alt="teacher" />
                  <img src="https://api.dicebear.com/7.x/notionists/svg?seed=User&backgroundColor=b8e8fb" className="w-10 h-10 rounded-full border-2 border-zinc-950" alt="admin" />
               </div>
-              <span className="text-sm font-semibold text-zinc-500">Over 1,200+ active students</span>
+              <span className="text-sm font-semibold text-zinc-500">{S.auth.activeStudents}</span>
            </div>
         </div>
       </div>
@@ -240,8 +246,8 @@ export function AuthExperience() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-24 relative">
          <div className="w-full max-w-[420px]">
             <div className="mb-12">
-               <h2 className="font-display text-4xl font-black text-zinc-900 tracking-tight mb-3">Welcome back</h2>
-               <p className="text-zinc-500 font-medium">Please enter your details to sign in.</p>
+               <h2 className="font-display text-4xl font-black text-zinc-900 tracking-tight mb-3">{S.auth.welcomeBack}</h2>
+               <p className="text-zinc-500 font-medium">{S.auth.signInSubtitle}</p>
             </div>
 
             <div className="flex bg-zinc-200/50 p-1.5 rounded-2xl mb-8">
@@ -249,13 +255,13 @@ export function AuthExperience() {
                  onClick={() => setTab("login")}
                  className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${tab === "login" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}
                >
-                 Sign In
+                 {S.auth.tabSignIn}
                </button>
                <button 
                  onClick={() => setTab("register")}
                  className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${tab === "register" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}
                >
-                 Register
+                 {S.auth.tabRegister}
                </button>
             </div>
 
@@ -273,7 +279,7 @@ export function AuthExperience() {
                    </div>
                    <input 
                      name="displayName" 
-                     placeholder="Full Name" 
+                     placeholder={S.auth.placeholderFullName} 
                      required 
                      className="w-full bg-white border border-black/10 rounded-2xl pl-12 pr-4 py-4 text-sm font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand/40 shadow-sm transition-all"
                    />
@@ -287,7 +293,7 @@ export function AuthExperience() {
                  <input 
                    name="email" 
                    type="text" 
-                   placeholder="Email Address" 
+                   placeholder={S.auth.placeholderEmail} 
                    required 
                    className="w-full bg-white border border-black/10 rounded-2xl pl-12 pr-4 py-4 text-sm font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand/40 shadow-sm transition-all"
                  />
@@ -300,7 +306,7 @@ export function AuthExperience() {
                  <input 
                    name="password" 
                    type="password" 
-                   placeholder="Password" 
+                   placeholder={S.auth.placeholderPassword} 
                    required 
                    className="w-full bg-white border border-black/10 rounded-2xl pl-12 pr-4 py-4 text-sm font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand/40 shadow-sm transition-all"
                  />
@@ -308,7 +314,7 @@ export function AuthExperience() {
 
                {tab === "login" && (
                  <div className="flex justify-end -mt-2">
-                    <button type="button" className="text-xs font-bold text-brand hover:underline">Forgot password?</button>
+                    <button type="button" className="text-xs font-bold text-brand hover:underline">{S.auth.forgotPassword}</button>
                  </div>
                )}
 
@@ -317,13 +323,13 @@ export function AuthExperience() {
                  disabled={loading}
                  className="w-full bg-ink text-canvas font-bold text-sm py-4 rounded-2xl hover:bg-zinc-800 transition-all active:scale-[0.98] shadow-lg shadow-black/10 mt-2 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                >
-                 {loading ? "Processing..." : (tab === "login" ? "Sign In to Academy" : "Create Account")}
+                 {loading ? S.auth.processing : (tab === "login" ? S.auth.signInButton : S.auth.createAccountButton)}
                  {!loading && <ArrowRight size={16} weight="bold" />}
                </button>
 
                <div className="flex items-center gap-4 my-2">
                    <div className="h-px bg-black/5 flex-1"></div>
-                   <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">or continue with</span>
+                   <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{S.auth.orContinueWith}</span>
                    <div className="h-px bg-black/5 flex-1"></div>
                 </div>
 
@@ -339,7 +345,7 @@ export function AuthExperience() {
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
-                  Google Intelligence Protocol
+                  {S.auth.googleButton}
                 </button>
             </form>
          </div>

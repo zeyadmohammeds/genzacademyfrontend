@@ -99,10 +99,19 @@ export function NotificationDrawer() {
                       <div className="shrink-0 text-mute">{expanded ? <CaretUp size={14} weight="bold" /> : <CaretDown size={14} weight="bold" />}</div>
                     </button>
                     {expanded && (
-                      <div className="px-4 pb-4 pl-[3.25rem]">
+                      <div className="px-4 pb-4 pl-[3.25rem] flex flex-col gap-2">
                         <div className="rounded-xl bg-canvas-soft border border-ink/10 p-3.5 text-ink text-sm font-medium leading-relaxed whitespace-pre-wrap">
                           {n.message}
                         </div>
+                        {n.destination && (
+                          <Link
+                            href={n.destination}
+                            onClick={closeDrawer}
+                            className="self-start text-xs font-bold text-brand hover:underline flex items-center gap-1 mt-1 bg-brand/5 px-3 py-1.5 rounded-lg border border-brand/10 hover:bg-brand/10 transition-all"
+                          >
+                            Go to Destination <ArrowRight size={12} weight="bold" />
+                          </Link>
+                        )}
                       </div>
                     )}
                   </div>

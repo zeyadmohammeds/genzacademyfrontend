@@ -3,19 +3,26 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, EnvelopeSimple } from "@phosphor-icons/react";
+import { apiPost } from "@/lib/api";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    setError(null);
+    try {
+      await apiPost("/api/auth/forgot-password", { email: email.trim() });
       setSubmitted(true);
-    }, 1200);
+    } catch (err: any) {
+      setError(err.message || "Failed to process request. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -29,6 +36,11 @@ export default function ForgotPasswordPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                 {error && (
+                   <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm font-bold border border-red-100 flex items-center gap-3">
+                     {error}
+                   </div>
+                 )}
                  <div className="relative">
                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                      <EnvelopeSimple size={20} className="text-zinc-400" />
