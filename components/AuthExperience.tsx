@@ -47,7 +47,20 @@ export function AuthExperience() {
         const targetOrigin = window.location.origin.includes("localhost") 
           ? window.location.origin 
           : "https://genzacademy.vercel.app";
-        window.location.href = `${targetOrigin}/`;
+        
+        const params = new URLSearchParams(window.location.search);
+        const returnUrl = params.get("returnUrl");
+        
+        let destination = "/dashboard";
+        if (!u.profileCompleted) {
+          destination = "/onboarding";
+        } else if (returnUrl && returnUrl.startsWith("/")) {
+          destination = returnUrl;
+        } else if (u.role === "admin") {
+          destination = "/admin";
+        }
+        
+        window.location.href = `${targetOrigin}${destination}`;
       }
     } catch (err: any) {
       let msg = err.message || "Login failed";
@@ -111,7 +124,7 @@ export function AuthExperience() {
       if (google) {
         try {
           google.accounts.id.initialize({
-            client_id: "657065188070-80edljn8ugu9uinsbp1sd6e93a55f5bg.apps.googleusercontent.com",
+            client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "1017632556527-l847alsomgr7qsnmfo709alduqvtdbsb.apps.googleusercontent.com",
             callback: handleGoogleCredentialResponse,
             auto_select: false,
             cancel_on_tap_outside: true,
