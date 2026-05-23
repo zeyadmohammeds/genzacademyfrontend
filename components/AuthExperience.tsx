@@ -246,8 +246,12 @@ export function AuthExperience() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-24 relative">
          <div className="w-full max-w-[420px]">
             <div className="mb-12">
-               <h2 className="font-display text-4xl font-black text-zinc-900 tracking-tight mb-3">{S.auth.welcomeBack}</h2>
-               <p className="text-zinc-500 font-medium">{S.auth.signInSubtitle}</p>
+               <h2 className="font-display text-4xl font-black text-zinc-900 tracking-tight mb-3">
+                 {tab === "login" ? S.auth.welcomeBack : S.auth.welcomeRegister}
+               </h2>
+               <p className="text-zinc-500 font-medium">
+                 {tab === "login" ? S.auth.signInSubtitle : S.auth.registerSubtitle}
+               </p>
             </div>
 
             <div className="flex bg-zinc-200/50 p-1.5 rounded-2xl mb-8">
@@ -314,7 +318,7 @@ export function AuthExperience() {
 
                {tab === "login" && (
                  <div className="flex justify-end -mt-2">
-                    <button type="button" className="text-xs font-bold text-brand hover:underline">{S.auth.forgotPassword}</button>
+                    <button type="button" onClick={() => router.push("/forgot-password")} className="text-xs font-bold text-brand hover:underline">{S.auth.forgotPassword}</button>
                  </div>
                )}
 

@@ -22,6 +22,8 @@ export const S = {
     // Form headings
     welcomeBack: "Welcome back",
     signInSubtitle: "Please enter your details to sign in.",
+    welcomeRegister: "Create account",
+    registerSubtitle: "Please enter your details to register.",
 
     // Tabs
     tabSignIn: "Sign In",

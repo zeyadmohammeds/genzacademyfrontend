@@ -31,6 +31,24 @@ const nextConfig: NextConfig = {
         hostname: "res.cloudinary.com"
       }
     ]
+  },
+  async rewrites() {
+    const rawUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://genzacademy.runasp.net";
+    const apiBaseUrl = rawUrl.endsWith("/") ? rawUrl.slice(0, -1) : rawUrl;
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${apiBaseUrl}/api/:path*`,
+      },
+      {
+        source: "/hubs/:path*",
+        destination: `${apiBaseUrl}/hubs/:path*`,
+      },
+      {
+        source: "/signin-google",
+        destination: `${apiBaseUrl}/signin-google`,
+      },
+    ];
   }
 };
 
