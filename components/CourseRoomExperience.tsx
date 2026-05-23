@@ -41,6 +41,43 @@ export function CourseRoomExperience({ room, isAdminView = false }: { room: Cour
   const [recommendedCourses, setRecommendedCourses] = useState<any[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  const [timeLeft, setTimeLeft] = useState<{ days: string; hours: string; minutes: string; seconds: string }>({
+    days: "00",
+    hours: "00",
+    minutes: "00",
+    seconds: "00"
+  });
+
+  const nextSessionScheduledAt = room.weeks.find(w => w.status !== "Completed")?.scheduledAt || room.weeks[0]?.scheduledAt;
+
+  useEffect(() => {
+    if (!nextSessionScheduledAt) return;
+    
+    const calculateTimeLeft = () => {
+      const difference = +new Date(nextSessionScheduledAt) - +new Date();
+      if (difference <= 0) {
+        setTimeLeft({ days: "00", hours: "00", minutes: "00", seconds: "00" });
+        return;
+      }
+      
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((difference / 1000 / 60) % 60);
+      const seconds = Math.floor((difference / 1000) % 60);
+      
+      setTimeLeft({
+        days: days.toString().padStart(2, "0"),
+        hours: hours.toString().padStart(2, "0"),
+        minutes: minutes.toString().padStart(2, "0"),
+        seconds: seconds.toString().padStart(2, "0")
+      });
+    };
+    
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(timer);
+  }, [nextSessionScheduledAt]);
+
   const getRoomData = useCallback(() => {
     return room;
   }, [room]);
@@ -376,57 +413,72 @@ export function CourseRoomExperience({ room, isAdminView = false }: { room: Cour
                )}
 
                {activeTab === 'next-zoom' && (
-                 <motion.div key="next-zoom" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex flex-col gap-8">
-                    <div className="w-full bg-[#1a1a1a] rounded-[3.5rem] p-12 text-white relative overflow-hidden shadow-2xl">
-                       <div className="relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto">
-                          <div className="w-20 h-20 bg-[#ff1a1a]/20 rounded-full flex items-center justify-center mb-8 border border-[#ff1a1a]/40 animate-bounce">
-                             <VideoCamera size={40} weight="fill" className="text-[#ff1a1a]" />
-                          </div>
-                          <h3 className="text-3xl lg:text-5xl font-display font-black mb-4">The Next Live Sync is Approaching</h3>
-                          <p className="text-zinc-400 font-medium text-lg mb-12">Synchronize with your peers and mentor for the Week 5 architectural logic breakdown. Have your questions ready!</p>
-                          
-                          <div className="grid grid-cols-4 gap-4 w-full mb-12">
-                             {[
-                                { val: '01', unit: 'Day' },
-                                { val: '14', unit: 'Hours' },
-                                { val: '22', unit: 'Mins' },
-                                { val: '45', unit: 'Secs' }
-                             ].map((t, i) => (
-                               <div key={i} className="flex flex-col items-center p-6 bg-white/5 rounded-3xl border border-white/10 backdrop-blur-md">
-                                  <span className="text-4xl font-display font-black text-white mb-1">{t.val}</span>
-                                  <span className="text-[10px] font-black uppercase tracking-widest text-[#ff1a1a]">{t.unit}</span>
-                               </div>
-                             ))}
-                          </div>
+                  <motion.div key="next-zoom" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex flex-col gap-8">
+                     <div className="w-full bg-[#1a1a1a] rounded-[3.5rem] p-12 text-white relative overflow-hidden shadow-2xl">
+                        <div className="relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto">
+                           <div className="w-20 h-20 bg-[#ff1a1a]/20 rounded-full flex items-center justify-center mb-8 border border-[#ff1a1a]/40 animate-bounce">
+                              <VideoCamera size={40} weight="fill" className="text-[#ff1a1a]" />
+                           </div>
+                           <h3 className="text-3xl lg:text-5xl font-display font-black mb-4">
+                             {nextSession ? "The Next Live Sync is Approaching" : "No Scheduled Live Sync"}
+                           </h3>
+                           <p className="text-zinc-400 font-medium text-lg mb-6 leading-relaxed">
+                             {nextSession 
+                               ? `Synchronize with your peers and mentor for the "${nextSession.weekTitle}" breakdown. Have your questions ready!`
+                               : "Check back later for newly scheduled mentor syncs."}
+                           </p>
+                           {nextSession && (
+                             <p className="text-[#ff1a1a] text-xs font-black uppercase tracking-widest mb-12">
+                               Scheduled for: {new Date(nextSession.scheduledAt).toLocaleString()}
+                             </p>
+                           )}
+                           
+                           {nextSession && (
+                             <div className="grid grid-cols-4 gap-4 w-full mb-12">
+                                {[
+                                   { val: timeLeft.days, unit: 'Day' },
+                                   { val: timeLeft.hours, unit: 'Hours' },
+                                   { val: timeLeft.minutes, unit: 'Mins' },
+                                   { val: timeLeft.seconds, unit: 'Secs' }
+                                ].map((t, i) => (
+                                  <div key={i} className="flex flex-col items-center p-6 bg-white/5 rounded-3xl border border-white/10 backdrop-blur-md">
+                                     <span className="text-4xl font-display font-black text-white mb-1">{t.val}</span>
+                                     <span className="text-[10px] font-black uppercase tracking-widest text-[#ff1a1a]">{t.unit}</span>
+                                  </div>
+                                ))}
+                             </div>
+                           )}
 
-                          <div className="flex items-center gap-6">
-                             <button onClick={handleJoinLive} className="px-12 py-5 bg-[#ff1a1a] text-white rounded-[2rem] text-sm font-black uppercase tracking-widest hover:bg-white hover:text-zinc-900 transition-all shadow-2xl shadow-[#ff1a1a]/40 active:scale-95">
-                                Join Waiting Room
-                             </button>
-                             <button className="px-8 py-5 border border-white/20 rounded-[2rem] text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all">
-                                Add to Calendar
-                             </button>
-                          </div>
-                       </div>
-                       <div className="absolute top-[-100px] left-[-100px] w-[500px] h-[500px] bg-[#ff1a1a] rounded-full blur-[150px] opacity-10"></div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                       <div className="p-8 bg-white rounded-[2.5rem] border border-black/5 shadow-sm">
-                          <h6 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4">Agenda</h6>
-                          <p className="text-sm font-bold text-zinc-800 leading-relaxed">Breakdown of the new project requirements and Q&A session.</p>
-                       </div>
-                       <div className="p-8 bg-white rounded-[2.5rem] border border-black/5 shadow-sm">
-                          <h6 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4">Prerequisites</h6>
-                          <p className="text-sm font-bold text-zinc-800 leading-relaxed">Ensure you have completed the Module 4 task before joining.</p>
-                       </div>
-                       <div className="p-8 bg-white rounded-[2.5rem] border border-black/5 shadow-sm">
-                          <h6 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4">Platform</h6>
-                          <p className="text-sm font-bold text-[#ff1a1a] leading-relaxed">Integrated Zoom SDK with End-to-End Encryption.</p>
-                       </div>
-                    </div>
-                 </motion.div>
-               )}
+                           <div className="flex items-center gap-6">
+                              <button onClick={handleJoinLive} className="px-12 py-5 bg-[#ff1a1a] text-white rounded-[2rem] text-sm font-black uppercase tracking-widest hover:bg-white hover:text-zinc-900 transition-all shadow-2xl shadow-[#ff1a1a]/40 active:scale-95">
+                                 {isHost ? "Start Session" : "Join Waiting Room"}
+                              </button>
+                              <button className="px-8 py-5 border border-white/20 rounded-[2rem] text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all">
+                                 Add to Calendar
+                              </button>
+                           </div>
+                        </div>
+                        <div className="absolute top-[-100px] left-[-100px] w-[500px] h-[500px] bg-[#ff1a1a] rounded-full blur-[150px] opacity-10"></div>
+                     </div>
+                     
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="p-8 bg-white rounded-[2.5rem] border border-black/5 shadow-sm">
+                           <h6 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4">Agenda</h6>
+                           <p className="text-sm font-bold text-zinc-800 leading-relaxed">
+                             {nextSession ? `Interactive breakdown of the syllabus session: "${nextSession.weekTitle}".` : "Q&A session with your class mentor."}
+                           </p>
+                        </div>
+                        <div className="p-8 bg-white rounded-[2.5rem] border border-black/5 shadow-sm">
+                           <h6 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4">Prerequisites</h6>
+                           <p className="text-sm font-bold text-zinc-800 leading-relaxed">Ensure you have reviewed the course syllabus and completed previous tasks before joining.</p>
+                        </div>
+                        <div className="p-8 bg-white rounded-[2.5rem] border border-black/5 shadow-sm">
+                           <h6 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4">Platform</h6>
+                           <p className="text-sm font-bold text-[#ff1a1a] leading-relaxed">Integrated Zoom SDK with End-to-End Encryption.</p>
+                        </div>
+                     </div>
+                  </motion.div>
+                )}
 
                {activeTab === 'materials' && (
                  <motion.div key="materials" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
@@ -584,24 +636,44 @@ export function CourseRoomExperience({ room, isAdminView = false }: { room: Cour
            <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-black/5">
               <h3 className="text-lg font-display font-black text-zinc-900 mb-6">Recommended</h3>
               <div className="space-y-4">
-                 {[1, 2].map(i => (
-                   <div key={i} className="flex gap-3 group cursor-pointer">
+                 {(recommendedCourses && recommendedCourses.length > 0
+                   ? recommendedCourses.slice(0, 3)
+                   : [
+                       {
+                         id: "mock-1",
+                         slug: "intro-cpp",
+                         title: "Build Dynamic UI for Websites with Advanced Patterns",
+                         priceEgp: 2500,
+                         imageUrl: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=200&q=80",
+                         rating: 4.9
+                       },
+                       {
+                         id: "mock-2",
+                         slug: "advanced-cpp",
+                         title: "Advanced C++ Programming and Architecture Fundamentals",
+                         priceEgp: 3000,
+                         imageUrl: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=200&q=80",
+                         rating: 4.8
+                       }
+                     ]
+                 ).map((c, idx) => (
+                   <Link href={`/courses/${c.slug}`} key={c.id || idx} className="flex gap-3 group cursor-pointer">
                       <div className="w-24 h-16 rounded-xl bg-zinc-100 overflow-hidden shrink-0 relative">
-                         <Image src={`https://picsum.photos/seed/rec${i}/200/150`} alt="rec" fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                         <Image src={c.imageUrl || c.coverImageUrl || `https://picsum.photos/seed/${c.id || idx}/200/150`} alt={c.title} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
                       </div>
                       <div className="flex-1 min-w-0">
-                         <h5 className="text-[11px] font-bold text-zinc-900 leading-tight line-clamp-2">Build Dynamic UI for Websites with Advanced Patterns</h5>
+                         <h5 className="text-[11px] font-bold text-zinc-900 leading-tight line-clamp-2">{c.title}</h5>
                          <div className="flex items-center gap-1.5 mt-1">
-                            <span className="text-[9px] font-black text-[#ff1a1a]">$256</span>
-                            <span className="text-[9px] font-bold text-zinc-400 flex items-center gap-0.5"><Star size={10} weight="fill" className="text-yellow-500" /> 4.9</span>
+                            <span className="text-[9px] font-black text-[#ff1a1a]">{c.priceEgp > 0 ? `EGP ${c.priceEgp.toLocaleString()}` : "Free"}</span>
+                            <span className="text-[9px] font-bold text-zinc-400 flex items-center gap-0.5"><Star size={10} weight="fill" className="text-yellow-500" /> {c.rating || "5.0"}</span>
                          </div>
                       </div>
-                   </div>
+                   </Link>
                  ))}
               </div>
-              <button className="w-full mt-6 py-3 border border-black/5 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors">
+              <Link href="/courses" className="w-full mt-6 block text-center py-3 border border-black/5 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors">
                  See All Courses
-              </button>
+              </Link>
            </div>
 
         </aside>
